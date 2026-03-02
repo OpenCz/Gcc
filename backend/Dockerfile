@@ -3,7 +3,7 @@ FROM oven/bun:latest
 WORKDIR /app
 
 # Copie les fichiers de dépendances
-COPY package.json bun.lockb ./
+COPY package.json bun.lock* ./
 
 # Installe les dépendances
 RUN bun install

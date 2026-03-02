@@ -1,0 +1,22 @@
+{
+  "name": "elysia",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "start": "bun src/index.ts"
+  },
+  "dependencies": {
+    "elysia": "latest",
+    "@elysiajs/cors": "latest",
+    "@prisma/client": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prisma": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true
+}
