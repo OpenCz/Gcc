@@ -1,0 +1,78 @@
+version: '3'
+
+services: #conteneur
+  db:
+    container_name: db
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    networks:
+      - back-tier
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes: #garde les données mm si le conteneur est éteint
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: on-failure
+
+  backend:
+    container_name: backend
+    build: ./backend #dossier qui contient le Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - back-tier
+      - front-tier
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on: #les services nécessaire pour que le conteneur fonctionne
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: on-failure
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      target: dev #utilise le stage dev du Dockerfile
+    ports:
+      - "5173:5173"
+    networks:
+      - front-tier
+    environment:
+      - BACKEND_URL=${BACKEND_URL}
+    depends_on: #les services nécessaire pour que le conteneur fonctionne
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: on-failure
+
+networks:
+  back-tier: #link db et backend ensemble
+    name: back-tier
+  front-tier: #link frontend et backend ensemble
+    name: front-tier
+
+volumes:
+  db-data:
+    name: db-data
