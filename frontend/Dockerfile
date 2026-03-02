@@ -13,7 +13,7 @@ RUN bun install
 COPY . .
 
 # Expose le port du frontend
-EXPOSE 5173
+EXPOSE 3000
 
 # Lance le serveur de dev
 CMD ["bun", "run", "dev", "--host", "0.0.0.0"]
