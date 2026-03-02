@@ -14,6 +14,43 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  manta     Manta[]
+}
+
+model Event {
+  id            Int         @id @default(autoincrement())
+  name          String?
+  nb_prospect   Int
+  description   String?
+  lieu          String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  resources     Resources[] // c une relation, ca le lie au model resources
+  manta         Manta[]
+}
+
+model Resources {
+  id        Int       @id @default(autoincrement())
+  name      String?
+  url       String
+  type      String
+  eventId   Int
+  event     Event     @relation(fields: [eventId], references: [id])
+}
+
+model Manta {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  present   Boolean   @default(false)
+  user      User      @relation(fields: [userId], references: [id])
+  event     Event     @relation(fields: [eventId], references: [id])
+}
+
+model Whitelist {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  role      Role
 }
 
 enum Role {
