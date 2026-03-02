@@ -15,7 +15,7 @@ COPY . .
 RUN bunx prisma generate
 
 # Expose le port du serveur Elysia
-EXPOSE 3000
+EXPOSE 8080
 
 # Lance le serveur
 CMD ["bun", "run", "src/index.ts"]
