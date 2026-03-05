@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:all": "concurrently \"next dev\" \"cd ../backend && bun run src/index.ts\"",
+    "dev:all": "concurrently \"next dev\" \"cd ./backend && bun dev\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

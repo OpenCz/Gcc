@@ -4,7 +4,7 @@ FROM oven/bun:latest AS dev
 WORKDIR /app
 
 # Copie les fichiers de dépendances
-COPY package.json bun.lock ./
+COPY package.json bun.lock* ./
 
 # Installe les dépendances
 RUN bun install
@@ -26,7 +26,7 @@ FROM oven/bun:latest AS build
 
 WORKDIR /app
 
-COPY package.json bun.lock ./
+COPY package.json bun.lock* ./
 RUN bun install
 
 COPY . .
