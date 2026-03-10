@@ -1,6 +1,9 @@
 # dependencies (bun install)
 node_modules
+<<<<<<< HEAD
 bun.lock
+=======
+>>>>>>> origin/dev
 
 # output
 out
