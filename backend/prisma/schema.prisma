@@ -11,10 +11,11 @@ model User {
   role          Role        @default(PROSPECT)
   email         String      @unique
   name          String?
-  password      String 
+  password      String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   manta         Manta[]
+  whitelist     Whitelist?
 }
 
 model Event {
@@ -60,9 +61,9 @@ model Subject {
 }
 
 model Whitelist {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  role      Role
+  id      Int  @id @default(autoincrement())
+  userId  Int  @unique
+  user    User @relation(fields: [userId], references: [id])
 }
 
 enum Role {

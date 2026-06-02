@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { adminRoutes } from "./routes/admin";
+import { authRoutes } from "./routes/auth";
 import { subjectService } from "./services/subject";
 import { join } from "path";
 import { readFile } from "fs/promises";
@@ -26,6 +27,7 @@ const app = new Elysia()
     }
   })
   .use(adminRoutes)
+  .use(authRoutes)
   .listen(8080);
 
 console.log(`Backend running on http://localhost:${app.server?.port}`);

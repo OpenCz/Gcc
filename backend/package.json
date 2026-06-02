@@ -8,9 +8,10 @@
     "start": "bun src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest",
     "@elysiajs/cors": "latest",
-    "@prisma/client": "latest"
+    "@prisma/client": "latest",
+    "elysia": "latest",
+    "jose": "^6.2.3"
   },
   "devDependencies": {
     "@types/bun": "latest",
