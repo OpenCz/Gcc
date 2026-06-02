@@ -1,3 +1,6 @@
+import { Stack, Text, NavLink } from "@mantine/core";
+import { IconLayoutList } from "@tabler/icons-react";
+
 export type Page = "resources";
 
 interface SidebarProps {
@@ -5,41 +8,44 @@ interface SidebarProps {
   onNavigate: (page: Page) => void;
 }
 
-const NAV_ITEMS: { page: Page; label: string }[] = [
-  { page: "resources", label: "Ressources" },
+const NAV_ITEMS: { page: Page; label: string; icon: React.ReactNode }[] = [
+  { page: "resources", label: "Ressources", icon: <IconLayoutList size={16} /> },
 ];
 
 export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   return (
-    <aside className="w-48 shrink-0 border-r border-epi-border bg-epi-bg pt-5 px-3">
-      <p className="text-[11px] font-bold text-white tracking-[0.2em] px-3 mb-3">
-        OVERVIEW<span className="text-epi-accent">_</span>
-      </p>
+    <Stack
+      gap={4}
+      p="xs"
+      style={{
+        width: 192,
+        flexShrink: 0,
+        borderRight: "1px solid var(--epi-border)",
+        background: "var(--epi-bg)",
+        paddingTop: 20,
+      }}
+    >
+      <Text
+        size="xs"
+        fw={700}
+        px="xs"
+        mb={4}
+        style={{ letterSpacing: "0.2em", color: "white" }}
+      >
+        OVERVIEW
+        <Text component="span" c="epitech">_</Text>
+      </Text>
 
-      <nav className="flex flex-col gap-0.5">
-        {NAV_ITEMS.map(({ page, label }) => (
-          <button
-            key={page}
-            onClick={() => onNavigate(page)}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded text-sm transition-colors text-left ${
-              currentPage === page
-                ? "text-white bg-epi-surface"
-                : "text-epi-muted hover:text-white hover:bg-epi-surface"
-            }`}
-          >
-            <IconList className="w-4 h-4 shrink-0 text-epi-accent" />
-            {label}
-          </button>
-        ))}
-      </nav>
-    </aside>
-  );
-}
-
-function IconList({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 20 20">
-      <path d="M4 4h12v2H4V4zm0 5h12v2H4V9zm0 5h12v2H4v-2z" />
-    </svg>
+      {NAV_ITEMS.map(({ page, label, icon }) => (
+        <NavLink
+          key={page}
+          label={label}
+          leftSection={icon}
+          active={currentPage === page}
+          onClick={() => onNavigate(page)}
+          color="epitech"
+        />
+      ))}
+    </Stack>
   );
 }

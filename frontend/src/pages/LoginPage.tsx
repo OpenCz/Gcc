@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Stack, Group, Text, TextInput, PasswordInput, Button, Anchor, Paper } from "@mantine/core";
 import epitechLogo from "../assets/img/epitech_logo.png";
 
 interface LoginPageProps {
@@ -14,68 +15,63 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     e.preventDefault();
     setLoading(true);
     // TODO: appel API auth
-    await new Promise(r => setTimeout(r, 500));
     setLoading(false);
     onLogin();
   };
 
   return (
-    <div className="min-h-screen bg-epi-bg flex flex-col">
-      <nav className="flex items-center justify-between px-6 py-3 border-b border-epi-border h-12">
-        <img src={epitechLogo} alt="Epitech" className="h-6 w-auto" />
-        <span className="text-sm font-bold tracking-[0.25em] text-white">
-          CODING <span className="text-epi-accent">CLUB</span> EPITECH
-        </span>
-        <div className="w-24" />
-      </nav>
+    <Stack style={{ minHeight: "100vh", background: "var(--epi-bg)" }} gap={0}>
+      <Group
+        justify="space-between"
+        px="md"
+        style={{ height: 48, borderBottom: "1px solid var(--epi-border)", flexShrink: 0 }}
+      >
+        <img src={epitechLogo} alt="Epitech" style={{ height: 24, width: "auto" }} />
+        <Text size="sm" fw={700} style={{ letterSpacing: "0.25em" }}>
+          CODING <Text component="span" c="epitech">CLUB</Text> EPITECH
+        </Text>
+        <div style={{ width: 80 }} />
+      </Group>
 
-      <div className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-sm">
-          <div className="bg-epi-surface border border-epi-border rounded-lg p-8">
-            <h2 className="text-xl font-bold text-white mb-1">Connexion</h2>
-            <p className="text-sm text-epi-muted mb-6">
-              Accédez aux ressources du Coding Club
-            </p>
+      <Stack flex={1} align="center" justify="center" p="md">
+        <Stack style={{ width: "100%", maxWidth: 360 }} gap="md">
+          <Paper withBorder p="xl">
+            <Stack gap="md">
+              <Stack gap={4}>
+                <Text size="xl" fw={700}>Connexion</Text>
+                <Text size="sm" c="dimmed">Accédez aux ressources du Coding Club</Text>
+              </Stack>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="text-xs text-epi-muted mb-1.5 block">Email</label>
-                <input
-                  type="text"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-epi-surface-2 border border-epi-border rounded-lg px-3 py-2.5 text-sm text-white placeholder-epi-ghost outline-none focus:border-epi-accent transition-colors"
-                  placeholder="prenom.nom@epitech.eu"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-epi-muted mb-1.5 block">Mot de passe</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-epi-surface-2 border border-epi-border rounded-lg px-3 py-2.5 text-sm text-white placeholder-epi-ghost outline-none focus:border-epi-accent transition-colors"
-                  placeholder="••••••••"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-epi-accent text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-epi-accent-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-2"
-              >
-                {loading ? "Connexion…" : "Se connecter"}
-              </button>
-            </form>
-          </div>
+              <form onSubmit={handleSubmit}>
+                <Stack gap="sm">
+                  <TextInput
+                    label="Email"
+                    placeholder="prenom.nom@epitech.eu"
+                    value={email}
+                    onChange={e => setEmail(e.currentTarget.value)}
+                  />
+                  <PasswordInput
+                    label="Mot de passe"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.currentTarget.value)}
+                  />
+                  <Button type="submit" loading={loading} fullWidth mt={4} color="epitech">
+                    Se connecter
+                  </Button>
+                </Stack>
+              </form>
+            </Stack>
+          </Paper>
 
-          <p className="text-center text-xs text-epi-ghost mt-4">
+          <Text size="xs" c="dimmed" ta="center">
             Étudiant Epitech ?{" "}
-            <button className="text-epi-accent hover:underline">
+            <Anchor size="xs" c="epitech" href="#">
               Connexion via my.epitech.eu
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
+            </Anchor>
+          </Text>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 }

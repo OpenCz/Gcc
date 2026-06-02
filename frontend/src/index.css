@@ -1,53 +1,15 @@
-@import "tailwindcss";
 @import "./styles/fonts.css";
 
-/* ─── Design tokens ──────────────────────────────────────────────────────────
-   Single source of truth. To retheme the app, edit only this block.
-   All values are exposed as Tailwind utilities (bg-epi-*, text-epi-*, etc.)
-   ─────────────────────────────────────────────────────────────────────────── */
-@theme {
-  /* Fonts */
-  --font-sans:    "IBM Plex Sans", sans-serif;
-  --font-display: "Anton", sans-serif;
-  --font-mono:    "Ubuntu Mono", monospace;
-
-  /* Backgrounds — from darkest to lightest */
-  --color-epi-bg:        #111111;
-  --color-epi-surface:   #1a1a1a;
-  --color-epi-surface-2: #222222;
-
-  /* Borders */
-  --color-epi-border:       #2a2a2a;
-  --color-epi-border-hover: #3a3a3a;
-
-  /* Brand accent (Epitech indigo) */
-  --color-epi-accent:      #6366f1;
-  --color-epi-accent-dark: #4f52d4;
-
-  /* Text hierarchy */
-  --color-epi-muted: #9ca3af;
-  --color-epi-faint: #6b7280;
-  --color-epi-ghost: #4b5563;
-
-  /* Semantic status colors */
-  --color-epi-success: #22c55e;
-  --color-epi-warning: #f59e0b;
-  --color-epi-danger:  #ef4444;
-}
-
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
-  background-color: #111111;
-  color: #ffffff;
-  font-family: "IBM Plex Sans", sans-serif;
-  min-height: 100vh;
+  margin: 0;
+  padding: 0;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -55,4 +17,24 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* ─── Design tokens ─────────────────────────────────────────────────────────
+   Semantic aliases sur les variables Mantine.
+   Modifier dark[] dans theme.ts pour rethémer l'app.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --epi-accent:      #6366f1;
+  --epi-accent-dark: #4f52d4;
+  --epi-success:     #22c55e;
+  --epi-warning:     #f59e0b;
+  --epi-danger:      #ef4444;
+}
+
+[data-mantine-color-scheme="dark"] {
+  --epi-bg:      var(--mantine-color-dark-7);  /* #111111 */
+  --epi-surface: var(--mantine-color-dark-6);  /* #1a1a1a */
+  --epi-surface2:var(--mantine-color-dark-5);  /* #222222 */
+  --epi-border:  var(--mantine-color-dark-4);  /* #2a2a2a */
+  --epi-muted:   var(--mantine-color-dark-3);  /* #9ca3af */
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Group, Text } from "@mantine/core";
 import epitechLogo from "../../assets/img/epitech_logo.png";
 
 export function Navbar() {
@@ -16,17 +17,29 @@ export function Navbar() {
   });
 
   return (
-    <nav className="flex items-center justify-between px-6 py-3 border-b border-epi-border bg-epi-bg shrink-0 h-12">
-      <img src={epitechLogo} alt="Epitech" className="h-6 w-auto" />
+    <Group
+      justify="space-between"
+      align="center"
+      px="md"
+      style={{
+        height: 48,
+        borderBottom: "1px solid var(--epi-border)",
+        background: "var(--epi-bg)",
+        flexShrink: 0,
+      }}
+    >
+      <img src={epitechLogo} alt="Epitech" style={{ height: 24, width: "auto" }} />
 
-      <span className="text-sm font-bold tracking-[0.25em] text-white">
-        CODING <span className="text-epi-accent">CLUB</span> EPITECH
-      </span>
+      <Text size="sm" fw={700} style={{ letterSpacing: "0.25em" }}>
+        CODING{" "}
+        <Text component="span" c="epitech">CLUB</Text>
+        {" "}EPITECH
+      </Text>
 
-      <div className="flex items-center gap-2 font-mono text-sm text-epi-muted">
-        <span className="text-epi-accent text-[10px]">●</span>
+      <Text size="sm" ff="monospace" c="dimmed" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <Text component="span" c="epitech" size="xs">●</Text>
         {formatted}
-      </div>
-    </nav>
+      </Text>
+    </Group>
   );
 }

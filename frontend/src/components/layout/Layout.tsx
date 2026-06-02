@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AppShell } from "@mantine/core";
 import { Navbar } from "./Navbar";
 import { Sidebar } from "./Sidebar";
 import type { Page } from "./Sidebar";
@@ -11,14 +12,22 @@ interface LayoutProps {
 
 export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-epi-bg flex flex-col">
-      <Navbar />
-      <div className="flex flex-1 overflow-hidden">
+    <AppShell
+      header={{ height: 48 }}
+      navbar={{ width: 192, breakpoint: "sm" }}
+      padding={0}
+    >
+      <AppShell.Header style={{ border: "none" }}>
+        <Navbar />
+      </AppShell.Header>
+
+      <AppShell.Navbar style={{ border: "none", background: "var(--epi-bg)" }}>
         <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </div>
+      </AppShell.Navbar>
+
+      <AppShell.Main style={{ background: "var(--epi-bg)" }}>
+        {children}
+      </AppShell.Main>
+    </AppShell>
   );
 }
