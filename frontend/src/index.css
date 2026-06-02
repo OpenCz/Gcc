@@ -1,6 +1,5 @@
 @import "./styles/fonts.css";
 
-/* ─── Base ─────────────────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -20,21 +19,22 @@ body {
 }
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────
-   Semantic aliases sur les variables Mantine.
-   Modifier dark[] dans theme.ts pour rethémer l'app.
+   Semantic aliases sur les variables Mantine (dark scale définie dans theme.ts).
+   Changer dark[] dans theme.ts rethème tout l'app.
    ─────────────────────────────────────────────────────────────────────────── */
-:root {
-  --epi-accent:      #6366f1;
-  --epi-accent-dark: #4f52d4;
-  --epi-success:     #22c55e;
-  --epi-warning:     #f59e0b;
-  --epi-danger:      #ef4444;
+[data-mantine-color-scheme="dark"] {
+  --epi-bg:      var(--mantine-color-dark-7);   /* #1f1f1f — main content  */
+  --epi-panel:   var(--mantine-color-dark-6);   /* #242424 — header/sidebar/panel */
+  --epi-surface: var(--mantine-color-dark-5);   /* #2a2a2a — cards, inputs */
+  --epi-border:  var(--mantine-color-dark-4);   /* #3a3a3a — borders       */
+  --epi-muted:   var(--mantine-color-dark-3);   /* #aaaaaa — muted text    */
+  --epi-ghost:   var(--mantine-color-dark-2);   /* #777777 — very muted    */
 }
 
-[data-mantine-color-scheme="dark"] {
-  --epi-bg:      var(--mantine-color-dark-7);  /* #111111 */
-  --epi-surface: var(--mantine-color-dark-6);  /* #1a1a1a */
-  --epi-surface2:var(--mantine-color-dark-5);  /* #222222 */
-  --epi-border:  var(--mantine-color-dark-4);  /* #2a2a2a */
-  --epi-muted:   var(--mantine-color-dark-3);  /* #9ca3af */
+:root {
+  --epi-accent:       #809dfd;
+  --epi-accent-dark:  #6b8afc;
+  --epi-beginner:     #4ade80;
+  --epi-intermediate: #facc15;
+  --epi-advanced:     #f87171;
 }
