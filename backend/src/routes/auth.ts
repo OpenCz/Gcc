@@ -8,10 +8,18 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     return redirect(authService.getLoginUrl());
   })
   .get("/callback", async ({ query, redirect, set }) => {
-    const code = query["code"];
+    const code  = query["code"];
+    const error = query["error"];
+    const errorDescription = query["error_description"];
+
+    if (error) {
+      set.status = 400;
+      return { error, error_description: errorDescription };
+    }
+
     if (!code) {
       set.status = 400;
-      return { message: "Missing code" };
+      return { message: "Missing code", received_params: Object.keys(query) };
     }
     try {
       const { token } = await authService.handleCallback(code);
