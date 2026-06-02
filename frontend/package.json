@@ -9,11 +9,13 @@
     "build": "bun run build.ts"
   },
   "dependencies": {
+    "@heroui/react": "latest",
+    "@mantine/core": "^9.3.0",
+    "@mantine/hooks": "^9.3.0",
     "bun-plugin-tailwind": "^0.1.2",
     "react": "^19",
     "react-dom": "^19",
-    "tailwindcss": "^4.1.11",
-    "@heroui/react": "latest"
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@types/react": "^19",
