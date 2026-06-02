@@ -4,10 +4,12 @@ import {
   IconSearch, IconCalendar, IconMapPin, IconLayoutGrid, IconList,
   IconBook, IconFile, IconX, IconStar,
 } from "@tabler/icons-react";
-import { subjects, session } from "../config";
+import { session } from "../config";
 import type { Subject } from "../config";
 import { SubjectCard } from "../components/ui/SubjectCard";
 import { SubjectDetail } from "../components/ui/SubjectDetail";
+
+const API = "http://localhost:8080";
 
 type DiffFilter = "Tous" | Subject["difficulty"];
 type SortMode = "default" | "az" | "za" | "diff-asc" | "diff-desc";
@@ -38,13 +40,22 @@ function saveFavorites(favs: Set<string>) {
 }
 
 export function ResourcesPage() {
-  const [search, setSearch]           = useState("");
-  const [diffFilter, setDiffFilter]   = useState<DiffFilter>("Tous");
-  const [showFavOnly, setShowFavOnly] = useState(false);
-  const [sortMode, setSortMode]       = useState<SortMode>("default");
-  const [viewMode, setViewMode]       = useState<ViewMode>("grid");
-  const [favorites, setFavorites]     = useState<Set<string>>(loadFavorites);
-  const [selected, setSelected]       = useState<Subject | null>(null);
+  const [subjects, setSubjects]        = useState<Subject[]>([]);
+  const [loading, setLoading]          = useState(true);
+  const [search, setSearch]            = useState("");
+  const [diffFilter, setDiffFilter]    = useState<DiffFilter>("Tous");
+  const [showFavOnly, setShowFavOnly]  = useState(false);
+  const [sortMode, setSortMode]        = useState<SortMode>("default");
+  const [viewMode, setViewMode]        = useState<ViewMode>("grid");
+  const [favorites, setFavorites]      = useState<Set<string>>(loadFavorites);
+  const [selected, setSelected]        = useState<Subject | null>(null);
+
+  useEffect(() => {
+    fetch(`${API}/subjects`)
+      .then(r => r.json())
+      .then((data: { subjects: Subject[] }) => setSubjects(data.subjects))
+      .finally(() => setLoading(false));
+  }, []);
 
   useEffect(() => { saveFavorites(favorites); }, [favorites]);
 
@@ -59,13 +70,13 @@ export function ResourcesPage() {
 
   const filtered = useMemo(() => {
     let list = [...subjects];
-    if (showFavOnly)        list = list.filter(s => favorites.has(s.name));
-    if (diffFilter !== "Tous") list = list.filter(s => s.difficulty === diffFilter);
+    if (showFavOnly)            list = list.filter(s => favorites.has(s.name));
+    if (diffFilter !== "Tous")  list = list.filter(s => s.difficulty === diffFilter);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(s =>
         s.name.toLowerCase().includes(q) ||
-        s.tags.some(t => t.toLowerCase().includes(q))
+        s.tags.some((t: string) => t.toLowerCase().includes(q))
       );
     }
     if (sortMode === "az")        list.sort((a, b) => a.name.localeCompare(b.name));
@@ -73,7 +84,7 @@ export function ResourcesPage() {
     if (sortMode === "diff-asc")  list.sort((a, b) => DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty]);
     if (sortMode === "diff-desc") list.sort((a, b) => DIFF_ORDER[b.difficulty] - DIFF_ORDER[a.difficulty]);
     return list;
-  }, [search, diffFilter, showFavOnly, sortMode, favorites]);
+  }, [subjects, search, diffFilter, showFavOnly, sortMode, favorites]);
 
   const activeFiltersCount = [
     search, diffFilter !== "Tous", showFavOnly, sortMode !== "default",
@@ -84,7 +95,7 @@ export function ResourcesPage() {
     setShowFavOnly(false); setSortMode("default");
   };
 
-  const totalFiles = subjects.reduce((acc, s) => acc + s.files.length, 0);
+  const totalFiles = subjects.reduce((acc: number, s: Subject) => acc + s.files.length, 0);
 
   return (
     <Stack gap="md" p="md" style={{ background: "var(--epi-bg)", minHeight: "100%" }}>
@@ -265,34 +276,44 @@ export function ResourcesPage() {
       </Group>
 
       {/* Cards */}
-      <div style={{
-        display: "flex",
-        flexWrap: viewMode === "grid" ? "wrap" : "nowrap",
-        flexDirection: viewMode === "list" ? "column" : "row",
-        gap: 20,
-      }}>
-        {filtered.map(s => (
-          <div
-            key={s.name}
-            style={{ width: viewMode === "grid" ? "calc(33.333% - 14px)" : "100%", minWidth: 200 }}
-          >
-            <SubjectCard
-              subject={s}
-              isFavorite={favorites.has(s.name)}
-              onToggleFavorite={toggleFavorite}
-              onClick={() => setSelected(s)}
-            />
-          </div>
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
+      {loading ? (
         <Stack align="center" gap="xs" mt="xl">
-          <IconSearch size={32} color="var(--epi-border)" />
-          <Text size="sm" c="dimmed">
-            Aucun sujet trouvé{search ? ` pour "${search}"` : ""}
-          </Text>
+          <Text size="sm" c="dimmed">Chargement…</Text>
         </Stack>
+      ) : (
+        <>
+          <div style={{
+            display: "flex",
+            flexWrap: viewMode === "grid" ? "wrap" : "nowrap",
+            flexDirection: viewMode === "list" ? "column" : "row",
+            gap: 20,
+          }}>
+            {filtered.map(s => (
+              <div
+                key={s.name}
+                style={{ width: viewMode === "grid" ? "calc(33.333% - 14px)" : "100%", minWidth: 200 }}
+              >
+                <SubjectCard
+                  subject={s}
+                  isFavorite={favorites.has(s.name)}
+                  onToggleFavorite={toggleFavorite}
+                  onClick={() => setSelected(s)}
+                />
+              </div>
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <Stack align="center" gap="xs" mt="xl">
+              <IconSearch size={32} color="var(--epi-border)" />
+              <Text size="sm" c="dimmed">
+                {subjects.length === 0
+                  ? "Aucun sujet disponible pour l'instant."
+                  : `Aucun sujet trouvé${search ? ` pour "${search}"` : ""}`}
+              </Text>
+            </Stack>
+          )}
+        </>
       )}
 
       {selected && (

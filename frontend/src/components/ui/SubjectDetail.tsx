@@ -4,6 +4,8 @@ import { IconBook, IconLink, IconCheck, IconX, IconDownload, IconFile, IconEye }
 import { Badge } from "./Badge";
 import type { Subject } from "../../config";
 
+const API = "http://localhost:8080";
+
 interface SubjectDetailProps {
   subject: Subject;
   onClose: () => void;
@@ -132,7 +134,7 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
                   </Group>
                   <Group gap="xs" style={{ flexShrink: 0 }}>
                     <a
-                      href={`/data/${file}`}
+                      href={`${API}/uploads/${file}`}
                       target="_blank"
                       rel="noreferrer"
                       style={{

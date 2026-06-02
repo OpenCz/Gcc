@@ -1,11 +1,10 @@
 import Elysia from "elysia";
 
-export const adminAuth = new Elysia({ name: "adminAuth" }).derive(
-  { as: "scoped" },
-  ({ headers, error }) => {
+export const adminAuth = new Elysia({ name: "adminAuth" })
+  .onBeforeHandle(({ headers, set }) => {
     const token = headers["authorization"]?.replace("Bearer ", "");
     if (!token || token !== process.env.ADMIN_SECRET) {
-      throw error(401, { message: "Unauthorized" });
+      set.status = 401;
+      return { message: "Unauthorized" };
     }
-  }
-);
+  });

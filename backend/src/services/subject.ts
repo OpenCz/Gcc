@@ -4,9 +4,15 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 
 const DIFFICULTY_MAP: Record<string, Difficulty> = {
-  "Débutant":      "BEGINNER",
+  "Débutant": "BEGINNER",
   "Intermédiaire": "INTERMEDIATE",
-  "Avancé":        "ADVANCED",
+  "Avancé": "ADVANCED",
+};
+
+const DIFFICULTY_LABEL: Record<Difficulty, string> = {
+  BEGINNER: "Débutant",
+  INTERMEDIATE: "Intermédiaire",
+  ADVANCED: "Avancé",
 };
 
 const UPLOADS_DIR = join(import.meta.dir, "../../uploads");
@@ -40,5 +46,11 @@ export const subjectService = {
     });
   },
 
-  getAll: () => subjectModel.findAll(),
+  getAll: async () => {
+    const rows = await subjectModel.findAll();
+    return rows.map(s => ({
+      ...s,
+      difficulty: DIFFICULTY_LABEL[s.difficulty],
+    }));
+  },
 };

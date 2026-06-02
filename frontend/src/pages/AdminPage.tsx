@@ -37,6 +37,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }) {
         onUnlock(password);
       } else {
         setError("Mot de passe incorrect.");
+        console.log(password);
       }
     } catch {
       setError("Impossible de joindre le serveur.");

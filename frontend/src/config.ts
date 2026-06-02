@@ -22,18 +22,4 @@ export const session: Session = {
 }
 
 export const subjects: Subject[] = [
-  {
-    name: 'Workshop C',
-    description: "Workshop d'introduction au langage C. Découvrez les bases de la programmation en C : variables, conditions, boucles, fonctions et pointeurs.",
-    files: ['WorkshopC.pdf'],
-    difficulty: 'Débutant',
-    tags: ['C'],
-  },
-  {
-    name: 'Workshop C++',
-    description: "Workshop d'introduction au langage C++. Explorez la programmation orientée objet avec C++ : classes, objets, héritage et polymorphisme.",
-    files: ['WorkshopCPP.pdf'],
-    difficulty: 'Intermédiaire',
-    tags: ['C++'],
-  },
 ]
