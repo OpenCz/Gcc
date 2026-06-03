@@ -8,7 +8,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     return redirect(authService.getLoginUrl());
   })
   .get("/callback", async ({ query, redirect, set }) => {
-    const code  = query["code"];
+    const code = query["code"];
     const error = query["error"];
     const errorDescription = query["error_description"];
 

@@ -13,7 +13,7 @@ export const authService = {
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       response_type: "code",
-      redirect_uri:  REDIRECT_URI,
+      redirect_uri: REDIRECT_URI,
       scope: "openid profile email User.Read",
       response_mode: "query",
     });
@@ -36,7 +36,6 @@ export const authService = {
     if (!tokenRes.ok) throw new Error("Token exchange failed");
     const tokens = await tokenRes.json() as { access_token: string };
 
-    //getter de user profile du microsoft graph
     const profileRes = await fetch("https://graph.microsoft.com/v1.0/me", {
       headers: { Authorization: `Bearer ${tokens.access_token}` },
     });
@@ -48,20 +47,15 @@ export const authService = {
     };
     const email = (profile.mail ?? profile.userPrincipalName ?? "").toLowerCase();
     if (!email) throw new Error("No email in Microsoft profile");
-    //debug
-    console.log("Microsoft auth success:", true, "| email:", email, "| name:", profile.displayName);
 
-    // Check whitelist user relation prisma
     const whitelisted = await prisma.whitelist.findFirst({ where: { user: { email } }, include: { user: true } });
     if (!whitelisted) throw new Error("Unauthorized: email not in whitelist");
 
-    //update name
     const user = await prisma.user.update({
       where: { email },
       data: { name: profile.displayName ?? whitelisted.user.name ?? email },
     });
 
-    // issue JWT
     const token = await new SignJWT({ userId: user.id, role: user.role, email: user.email })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("7d")
