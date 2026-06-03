@@ -13,54 +13,47 @@ interface SubjectWithVisible extends Subject {
 }
 
 export function MantaPage() {
-  const [token, setToken] = useState("");
   const [subjects, setSubjects] = useState<SubjectWithVisible[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("");
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get("token");
-    if (urlToken) {
-      sessionStorage.setItem("mantaToken", urlToken);
-      window.history.replaceState({}, "", "/manta");
-    }
-    const stored = urlToken ?? sessionStorage.getItem("mantaToken") ?? "";
-    setToken(stored);
-  }, []);
-
-  useEffect(() => {
-    if (!token) return;
-
-    fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then((d: { user?: { email: string } }) => setUserName(d.user?.email ?? ""))
+    fetch(`${API}/auth/me`, { credentials: "include" })
+      .then(r => {
+        if (r.status === 401) { setUnauthorized(true); return null; }
+        return r.json() as Promise<{ user?: { email: string } }>;
+      })
+      .then(d => { if (d) setUserName(d.user?.email ?? ""); })
       .catch(() => {});
 
-    fetch(`${API}/manta/subjects`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then((d: { subjects?: SubjectWithVisible[] }) => setSubjects(d.subjects ?? []))
+    fetch(`${API}/manta/subjects`, { credentials: "include" })
+      .then(r => {
+        if (r.status === 401) { setUnauthorized(true); return null; }
+        return r.json() as Promise<{ subjects?: SubjectWithVisible[] }>;
+      })
+      .then(d => { if (d) setSubjects(d.subjects ?? []); })
       .catch(() => setError("Impossible de charger les sujets."))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, []);
 
   const toggle = async (subject: SubjectWithVisible) => {
     const next = !subject.visible;
     setSubjects(prev => prev.map(s => s.id === subject.id ? { ...s, visible: next } : s));
     await fetch(`${API}/manta/subjects/${subject.id}`, {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ visible: next }),
     });
   };
 
   const logout = () => {
-    sessionStorage.removeItem("mantaToken");
-    window.location.href = "/";
+    window.location.href = `${API}/auth/logout`;
   };
 
-  if (!token) return (
+  if (unauthorized) return (
     <div style={{ minHeight: "100vh", background: "var(--epi-bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Text c="dimmed">Session expirée. <a href={`${API}/auth/login`} style={{ color: "var(--epi-accent)" }}>Se reconnecter</a></Text>
     </div>
