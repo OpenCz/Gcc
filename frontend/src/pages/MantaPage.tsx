@@ -70,7 +70,7 @@ export function MantaPage() {
         borderBottom: "1px solid var(--epi-border)", flexShrink: 0,
       }}>
         <Group gap="sm">
-          <a href="/"><img src={epitechLogo} height={22} alt="Epitech" style={{ cursor: "pointer" }} /></a>
+          <a href="/"><img src={epitechLogo} height={20} alt="Epitech" style={{ cursor: "pointer" }} /></a>
           <Text size="sm" c="dimmed">/</Text>
           <Text size="sm" fw={600}>Espace Manta</Text>
         </Group>
