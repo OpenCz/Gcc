@@ -1,6 +1,7 @@
 import Elysia, { t } from "elysia";
 import { adminAuth } from "../middlewares/adminAuth";
 import { subjectService } from "../services/subject";
+import { eventService } from "../services/event";
 
 export const adminRoutes = new Elysia({ prefix: "/admin" })
   .use(adminAuth)
@@ -39,4 +40,22 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
   .get("/subjects", async () => {
     const subjects = await subjectService.getAll();
     return { subjects };
+  })
+  .post("/events", async ({ body }) => {
+    const event = await eventService.create({
+      name: body.name,
+      description: body.description,
+      lieu: body.lieu,
+      date: new Date(body.date),
+      capacity: body.capacity,
+    });
+    return { success: true, event };
+  }, {
+    body: t.Object({
+      name: t.String({ minLength: 1 }),
+      description: t.Optional(t.String()),
+      lieu: t.String({ minLength: 1 }),
+      date: t.String(),
+      capacity: t.Number({ minimum: 1 }),
+    }),
   });
