@@ -31,7 +31,9 @@ export function Navbar() {
         flexShrink: 0,
       }}
     >
-      <img src={epitechLogo} alt="Epitech" style={{ height: 24, width: "auto" }} />
+      <a href="/" style={{ display: "flex" }}>
+        <img src={epitechLogo} alt="Epitech" style={{ height: 24, width: "auto", cursor: "pointer" }} />
+      </a>
 
       <Text size="sm" fw={700} style={{ letterSpacing: "0.25em" }}>
         CODING{" "}

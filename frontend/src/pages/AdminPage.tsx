@@ -56,7 +56,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }) {
         <form onSubmit={submit}>
           <Stack gap="xl">
             <Stack gap={6} align="center">
-              <img src={epitechLogo} height={28} alt="Epitech" style={{ marginBottom: 4 }} />
+              <a href="/"><img src={epitechLogo} height={28} alt="Epitech" style={{ marginBottom: 4, cursor: "pointer" }} /></a>
               <Text fw={700} size="xl" ff="heading">Zone Admin</Text>
               <Text size="sm" c="dimmed">Accès restreint</Text>
             </Stack>
@@ -246,7 +246,7 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
         flexShrink: 0,
       }}>
         <Group gap="sm">
-          <img src={epitechLogo} height={22} alt="Epitech" />
+          <a href="/"><img src={epitechLogo} height={22} alt="Epitech" style={{ cursor: "pointer" }} /></a>
           <Text size="sm" c="dimmed">Admin</Text>
           <Text size="sm" c="dimmed">/</Text>
           <Text size="sm" fw={600}>Nouveau sujet</Text>
