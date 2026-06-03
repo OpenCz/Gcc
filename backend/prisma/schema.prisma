@@ -56,6 +56,7 @@ model Subject {
   tags        String[]
   files       String[]
   isNew       Boolean    @default(true)
+  visible     Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
