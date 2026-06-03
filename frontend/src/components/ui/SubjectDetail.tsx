@@ -23,7 +23,6 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
   };
 
   return (
-    /* Backdrop */
     <div
       onClick={onClose}
       style={{
@@ -35,7 +34,6 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
         justifyContent: "flex-end",
       }}
     >
-      {/* Panel — stopPropagation so clicks inside don't close */}
       <div
         onClick={e => e.stopPropagation()}
         style={{
@@ -48,7 +46,6 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
           animation: "slideIn 0.25s ease",
         }}
       >
-        {/* Header */}
         <Group
           justify="space-between"
           p="md"
@@ -88,7 +85,6 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
           </Group>
         </Group>
 
-        {/* Body */}
         <ScrollArea flex={1} p="md">
           <Stack gap="md">
             <Text size="sm" c="dimmed" style={{ lineHeight: 1.6 }}>

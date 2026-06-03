@@ -19,7 +19,6 @@ export function MantaPage() {
   const [error, setError] = useState("");
   const [userName, setUserName] = useState("");
 
-  // Read token from URL on first load
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
@@ -31,7 +30,6 @@ export function MantaPage() {
     setToken(stored);
   }, []);
 
-  // Fetch subjects once token is ready
   useEffect(() => {
     if (!token) return;
 
@@ -73,8 +71,6 @@ export function MantaPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--epi-bg)", display: "flex", flexDirection: "column" }}>
-
-      {/* Header */}
       <div style={{
         height: 48, display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 24px", background: "var(--epi-panel)",
@@ -103,21 +99,16 @@ export function MantaPage() {
       <ScrollArea flex={1}>
         <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 24px" }}>
           <Stack gap="xl">
-
-            {/* Title + stats */}
             <Stack gap={4}>
               <Text fw={700} size="xl" ff="heading">Gestion des sujets</Text>
-              <Text size="sm" c="dimmed">
-                Active les sujets pour les rendre visibles aux prospects.
-              </Text>
+              <Text size="sm" c="dimmed">Active les sujets pour les rendre visibles aux prospects.</Text>
             </Stack>
 
-            {/* Stats */}
             <Group gap="md">
               {[
-                { label: "Visibles",  value: visible,   color: "var(--epi-beginner)" },
-                { label: "Masqués",   value: invisible,  color: "var(--epi-border)"  },
-                { label: "Total",     value: subjects.length, color: "var(--epi-accent)" },
+                { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
+                { label: "Masqués", value: invisible, color: "var(--epi-border)" },
+                { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
               ].map(({ label, value, color }) => (
                 <div key={label} style={{
                   background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
@@ -129,7 +120,6 @@ export function MantaPage() {
               ))}
             </Group>
 
-            {/* Subject list */}
             {loading ? (
               <Text c="dimmed" ta="center">Chargement…</Text>
             ) : error ? (
@@ -175,9 +165,7 @@ export function MantaPage() {
                         flexShrink: 0,
                       }}
                     >
-                      {s.visible
-                        ? <><IconEye size={13} /> Visible</>
-                        : <><IconEyeOff size={13} /> Masqué</>}
+                      {s.visible ? <><IconEye size={13} /> Visible</> : <><IconEyeOff size={13} /> Masqué</>}
                     </button>
                   </div>
                 ))}

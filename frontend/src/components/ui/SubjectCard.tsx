@@ -34,7 +34,6 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
         (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
       }}
     >
-      {/* Header */}
       <Group justify="space-between" wrap="nowrap" gap="xs">
         <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
           <IconBook size={18} color="var(--epi-accent)" style={{ flexShrink: 0 }} />
@@ -77,7 +76,6 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
         </Group>
       </Group>
 
-      {/* Tags */}
       <Stack gap={6}>
         <Group gap={6} wrap="wrap">
           {subject.tags.map(tag => (
@@ -96,7 +94,6 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
         </Group>
       </Stack>
 
-      {/* Footer */}
       <Group justify="space-between">
         <Group gap={6}>
           <IconFile size={12} color="var(--epi-accent)" />

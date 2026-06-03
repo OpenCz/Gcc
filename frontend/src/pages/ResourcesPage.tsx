@@ -17,15 +17,13 @@ type ViewMode = "grid" | "list";
 
 const DIFF_FILTERS: DiffFilter[] = ["Tous", "Débutant", "Intermédiaire", "Avancé"];
 const SORT_OPTIONS = [
-  { value: "default",   label: "Par défaut" },
-  { value: "az",        label: "Nom A → Z" },
-  { value: "za",        label: "Nom Z → A" },
-  { value: "diff-asc",  label: "Difficulté ↑" },
+  { value: "default", label: "Par défaut" },
+  { value: "az", label: "Nom A → Z" },
+  { value: "za", label: "Nom Z → A" },
+  { value: "diff-asc", label: "Difficulté ↑" },
   { value: "diff-desc", label: "Difficulté ↓" },
 ];
-const DIFF_ORDER: Record<Subject["difficulty"], number> = {
-  Débutant: 0, Intermédiaire: 1, Avancé: 2,
-};
+const DIFF_ORDER: Record<Subject["difficulty"], number> = { Débutant: 0, Intermédiaire: 1, Avancé: 2 };
 
 function loadFavorites(): Set<string> {
   try {
@@ -40,15 +38,15 @@ function saveFavorites(favs: Set<string>) {
 }
 
 export function ResourcesPage() {
-  const [subjects, setSubjects]        = useState<Subject[]>([]);
-  const [loading, setLoading]          = useState(true);
-  const [search, setSearch]            = useState("");
-  const [diffFilter, setDiffFilter]    = useState<DiffFilter>("Tous");
-  const [showFavOnly, setShowFavOnly]  = useState(false);
-  const [sortMode, setSortMode]        = useState<SortMode>("default");
-  const [viewMode, setViewMode]        = useState<ViewMode>("grid");
-  const [favorites, setFavorites]      = useState<Set<string>>(loadFavorites);
-  const [selected, setSelected]        = useState<Subject | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [diffFilter, setDiffFilter] = useState<DiffFilter>("Tous");
+  const [showFavOnly, setShowFavOnly] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>("default");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [favorites, setFavorites] = useState<Set<string>>(loadFavorites);
+  const [selected, setSelected] = useState<Subject | null>(null);
 
   useEffect(() => {
     fetch(`${API}/subjects`)
@@ -70,8 +68,10 @@ export function ResourcesPage() {
 
   const filtered = useMemo(() => {
     let list = [...subjects];
-    if (showFavOnly)            list = list.filter(s => favorites.has(s.name));
-    if (diffFilter !== "Tous")  list = list.filter(s => s.difficulty === diffFilter);
+    if (showFavOnly)
+      list = list.filter(s => favorites.has(s.name));
+    if (diffFilter !== "Tous")
+      list = list.filter(s => s.difficulty === diffFilter);
     if (search) {
       const q = search.toLowerCase();
       list = list.filter(s =>
@@ -79,9 +79,9 @@ export function ResourcesPage() {
         s.tags.some((t: string) => t.toLowerCase().includes(q))
       );
     }
-    if (sortMode === "az")        list.sort((a, b) => a.name.localeCompare(b.name));
-    if (sortMode === "za")        list.sort((a, b) => b.name.localeCompare(a.name));
-    if (sortMode === "diff-asc")  list.sort((a, b) => DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty]);
+    if (sortMode === "az") list.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortMode === "za") list.sort((a, b) => b.name.localeCompare(a.name));
+    if (sortMode === "diff-asc") list.sort((a, b) => DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty]);
     if (sortMode === "diff-desc") list.sort((a, b) => DIFF_ORDER[b.difficulty] - DIFF_ORDER[a.difficulty]);
     return list;
   }, [subjects, search, diffFilter, showFavOnly, sortMode, favorites]);
@@ -100,7 +100,6 @@ export function ResourcesPage() {
   return (
     <Stack gap="md" p="md" style={{ background: "var(--epi-bg)", minHeight: "100%" }}>
 
-      {/* Session banner */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         background: "var(--epi-surface)",
@@ -138,7 +137,6 @@ export function ResourcesPage() {
         </Stack>
       </div>
 
-      {/* Search */}
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
         background: "var(--epi-surface)",
@@ -169,7 +167,6 @@ export function ResourcesPage() {
         )}
       </div>
 
-      {/* Toolbar */}
       <Group justify="space-between" wrap="wrap" gap="sm">
         <Group gap="xs" wrap="wrap">
           {DIFF_FILTERS.map(f => {
@@ -275,7 +272,6 @@ export function ResourcesPage() {
         </Group>
       </Group>
 
-      {/* Cards */}
       {loading ? (
         <Stack align="center" gap="xs" mt="xl">
           <Text size="sm" c="dimmed">Chargement…</Text>

@@ -11,17 +11,15 @@ const API = "http://localhost:8080";
 type Difficulty = "Débutant" | "Intermédiaire" | "Avancé";
 
 const DIFF_COLORS: Record<Difficulty, string> = {
-  "Débutant":      "var(--epi-beginner)",
+  "Débutant": "var(--epi-beginner)",
   "Intermédiaire": "var(--epi-intermediate)",
-  "Avancé":        "var(--epi-advanced)",
+  "Avancé": "var(--epi-advanced)",
 };
-
-// ─── Password Gate ──────────────────────────────────────────────────────────
 
 function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }) {
   const [password, setPassword] = useState("");
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +35,6 @@ function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }) {
         onUnlock(password);
       } else {
         setError("Mot de passe incorrect.");
-        console.log(password);
       }
     } catch {
       setError("Impossible de joindre le serveur.");
@@ -119,8 +116,6 @@ function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }) {
   );
 }
 
-// ─── Tag Input ───────────────────────────────────────────────────────────────
-
 function TagInput({ tags, onChange }: { tags: string[]; onChange: (t: string[]) => void }) {
   const [input, setInput] = useState("");
 
@@ -181,19 +176,17 @@ function TagInput({ tags, onChange }: { tags: string[]; onChange: (t: string[]) 
   );
 }
 
-// ─── Subject Form ────────────────────────────────────────────────────────────
-
 function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void }) {
-  const [name, setName]             = useState("");
-  const [description, setDesc]      = useState("");
+  const [name, setName] = useState("");
+  const [description, setDesc] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
-  const [tags, setTags]             = useState<string[]>([]);
-  const [pdfFile, setPdfFile]       = useState<File | null>(null);
-  const [dragOver, setDragOver]     = useState(false);
-  const [loading, setLoading]       = useState(false);
-  const [success, setSuccess]       = useState(false);
-  const [error, setError]           = useState("");
-  const fileInputRef                = useRef<HTMLInputElement>(null);
+  const [tags, setTags] = useState<string[]>([]);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File | null) => {
     if (file && file.type === "application/pdf") setPdfFile(file);
@@ -237,7 +230,6 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--epi-bg)", display: "flex", flexDirection: "column" }}>
-      {/* Header */}
       <div style={{
         height: 48, display: "flex", alignItems: "center",
         justifyContent: "space-between", padding: "0 24px",
@@ -266,7 +258,6 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
         </button>
       </div>
 
-      {/* Content */}
       <ScrollArea flex={1}>
         <div style={{ maxWidth: 640, margin: "0 auto", padding: "40px 24px" }}>
           {success ? (
@@ -311,8 +302,6 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
                   borderRadius: 12, padding: 28,
                 }}>
                   <Stack gap="lg">
-
-                    {/* Name */}
                     <div>
                       <Text size="sm" fw={600} mb={8}>Titre <span style={{ color: "var(--epi-advanced)" }}>*</span></Text>
                       <div style={{
@@ -335,7 +324,6 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
                       </div>
                     </div>
 
-                    {/* Description */}
                     <div>
                       <Text size="sm" fw={600} mb={8}>Description</Text>
                       <textarea
@@ -354,13 +342,12 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
                       />
                     </div>
 
-                    {/* Difficulty */}
                     <div>
                       <Text size="sm" fw={600} mb={8}>Difficulté</Text>
                       <Group gap="xs">
                         {(["Débutant", "Intermédiaire", "Avancé"] as Difficulty[]).map(d => {
                           const active = difficulty === d;
-                          const color  = DIFF_COLORS[d];
+                          const color = DIFF_COLORS[d];
                           return (
                             <button
                               key={d}
@@ -382,14 +369,12 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
                       </Group>
                     </div>
 
-                    {/* Tags */}
                     <div>
                       <Text size="sm" fw={600} mb={8}>Tags / Langage</Text>
                       <TagInput tags={tags} onChange={setTags} />
                       <Text size="xs" c="dimmed" mt={6}>Appuie sur Entrée ou virgule pour ajouter un tag.</Text>
                     </div>
 
-                    {/* PDF */}
                     <div>
                       <Text size="sm" fw={600} mb={8}>Fichier PDF <span style={{ color: "var(--epi-advanced)" }}>*</span></Text>
                       <div
@@ -466,8 +451,6 @@ function SubjectForm({ token, onLogout }: { token: string; onLogout: () => void 
     </div>
   );
 }
-
-// ─── Main ────────────────────────────────────────────────────────────────────
 
 export function AdminPage() {
   const [token, setToken] = useState(() => sessionStorage.getItem("adminToken") ?? "");

@@ -3,9 +3,9 @@ import type { Subject } from "../../config";
 type Level = Subject["difficulty"];
 
 const colors: Record<Level, string> = {
-  Débutant:      "var(--epi-beginner)",
+  Débutant: "var(--epi-beginner)",
   Intermédiaire: "var(--epi-intermediate)",
-  Avancé:        "var(--epi-advanced)",
+  Avancé: "var(--epi-advanced)",
 };
 
 export function Badge({ level }: { level: Level }) {

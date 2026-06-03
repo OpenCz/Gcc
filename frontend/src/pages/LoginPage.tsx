@@ -41,7 +41,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 <Text size="xl" fw={700}>Connexion</Text>
                 <Text size="sm" c="dimmed">Accédez aux ressources du Coding Club</Text>
               </Stack>
-
               <form onSubmit={handleSubmit}>
                 <Stack gap="sm">
                   <TextInput
@@ -63,7 +62,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </form>
             </Stack>
           </Paper>
-
           <Text size="xs" c="dimmed" ta="center">
             Étudiant Epitech ?{" "}
             <Anchor size="xs" c="epitech" href="#">
