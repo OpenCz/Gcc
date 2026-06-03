@@ -8,7 +8,7 @@ on:
 
 jobs:
   backend:
-    name: Backend — type check & Prisma
+    name: Backend - type check & Prisma
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -34,7 +34,7 @@ jobs:
         run: bunx tsc --noEmit
 
   frontend:
-    name: Frontend — type check
+    name: Frontend - type check
     runs-on: ubuntu-latest
     defaults:
       run:
