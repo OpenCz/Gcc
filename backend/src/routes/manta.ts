@@ -1,5 +1,5 @@
 import Elysia, { t } from "elysia";
-import { mantaAuth } from "../utils/mantaAuth";
+import { mantaAuth } from "../middlewares/mantaAuth";
 import { subjectService } from "../services/subject";
 
 export const mantaRoutes = new Elysia({ prefix: "/manta" })
