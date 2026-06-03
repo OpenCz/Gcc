@@ -9,7 +9,10 @@ import { readFile } from "fs/promises";
 
 const UPLOADS_DIR = join(import.meta.dir, "../uploads");
 const app = new Elysia()
-  .use(cors())
+  .use(cors({
+    origin: process.env.FRONTEND_URL ?? "http://localhost:6767",
+    credentials: true,
+  }))
   .get("/", () => ({ status: "ok" }))
   .get("/subjects", async () => {
     const subjects = await subjectService.getVisible();
