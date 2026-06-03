@@ -14,25 +14,25 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
         return { message: "Un fichier PDF est requis." };
       }
       const subject = await subjectService.create({
-        name:        String(data["name"] ?? ""),
+        name: String(data["name"] ?? ""),
         description: String(data["description"] ?? ""),
-        difficulty:  String(data["difficulty"] ?? ""),
-        tags:        String(data["tags"] ?? ""),
+        difficulty: String(data["difficulty"] ?? ""),
+        tags: String(data["tags"] ?? ""),
         file,
       });
       return { success: true, subject };
     },
     {
       body: t.Object({
-        name:        t.String({ minLength: 1 }),
+        name: t.String({ minLength: 1 }),
         description: t.Optional(t.String()),
-        difficulty:  t.Union([
+        difficulty: t.Union([
           t.Literal("Débutant"),
           t.Literal("Intermédiaire"),
           t.Literal("Avancé"),
         ]),
-        tags:  t.Optional(t.String()),
-        file:  t.Optional(t.Any()),
+        tags: t.Optional(t.String()),
+        file: t.Optional(t.Any()),
       }),
     }
   )
