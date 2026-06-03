@@ -11,10 +11,11 @@ model User {
   role          Role        @default(PROSPECT)
   email         String      @unique
   name          String?
-  password      String 
+  password      String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   manta         Manta[]
+  whitelist     Whitelist?
 }
 
 model Event {
@@ -25,7 +26,7 @@ model Event {
   lieu          String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  resources     Resources[] // c une relation, ca le lie au model resources
+  resources     Resources[]
   manta         Manta[]
 }
 
@@ -47,14 +48,33 @@ model Manta {
   event     Event     @relation(fields: [eventId], references: [id])
 }
 
+model Subject {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String     @default("")
+  difficulty  Difficulty @default(BEGINNER)
+  tags        String[]
+  files       String[]
+  isNew       Boolean    @default(true)
+  visible     Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
 model Whitelist {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  role      Role
+  id      Int  @id @default(autoincrement())
+  userId  Int  @unique
+  user    User @relation(fields: [userId], references: [id])
 }
 
 enum Role {
   PROSPECT
   MANTA
   PEDA
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }

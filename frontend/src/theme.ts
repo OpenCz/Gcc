@@ -1,43 +1,34 @@
 import { createTheme, type MantineColorsTuple } from "@mantine/core";
 
 const epitechAccent: MantineColorsTuple = [
-  "#eeeeff",
-  "#d8d9ff",
-  "#adadff",
-  "#7f7ffe",
-  "#5856fd",
-  "#413cfc",
-  "#6366f1", // [6] — primary shade
-  "#4f52d4",
-  "#3d40b8",
-  "#2c2e9a",
+  "#eef0ff",
+  "#dde1ff",
+  "#bbc3ff",
+  "#99a3fe",
+  "#809dfd",
+  "#6b8afc",
+  "#5477fb",
+  "#4264e0",
+  "#3255c5",
+  "#2246aa",
 ];
 
-/*
- * Override Mantine's dark scale to match Epitech's palette.
- * Mantine maps these indices to specific roles in dark mode:
- *   dark[7] → body background      → #111111
- *   dark[6] → Paper/Card/Input bg  → #1a1a1a
- *   dark[5] → hover / surface-2    → #222222
- *   dark[4] → border               → #2a2a2a
- *   dark[3] → dimmed text          → #9ca3af
- */
 const epitechDark: MantineColorsTuple = [
   "#ffffff",
   "#e0e0e0",
-  "#c0c0c0",
-  "#9ca3af",
+  "#777777",
+  "#aaaaaa",
+  "#3a3a3a",
   "#2a2a2a",
-  "#222222",
-  "#1a1a1a",
+  "#242424",
+  "#1f1f1f",
+  "#191919",
   "#111111",
-  "#0d0d0d",
-  "#090909",
 ];
 
 export const theme = createTheme({
   primaryColor: "epitech",
-  primaryShade: { dark: 6, light: 6 },
+  primaryShade: { dark: 4, light: 4 },
 
   colors: {
     epitech: epitechAccent,
@@ -46,15 +37,18 @@ export const theme = createTheme({
 
   fontFamily: '"IBM Plex Sans", sans-serif',
   fontFamilyMonospace: '"Ubuntu Mono", monospace',
-  headings: { fontFamily: '"IBM Plex Sans", sans-serif' },
+  headings: { fontFamily: '"Anton", sans-serif' },
 
   defaultRadius: "md",
 
   components: {
     NavLink: {
       styles: {
-        root: { borderRadius: "6px" },
+        root: { borderRadius: 6 },
       },
+    },
+    Paper: {
+      defaultProps: { bg: "dark.6" },
     },
   },
 });
