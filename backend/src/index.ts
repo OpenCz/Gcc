@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
+import { mantaRoutes } from "./routes/manta";
 import { subjectService } from "./services/subject";
 import { join } from "path";
 import { readFile } from "fs/promises";
@@ -12,7 +13,7 @@ const app = new Elysia()
   .use(cors())
   .get("/", () => ({ status: "ok" }))
   .get("/subjects", async () => {
-    const subjects = await subjectService.getAll();
+    const subjects = await subjectService.getVisible();
     return { subjects };
   })
   .get("/uploads/:filename", async ({ params, set }) => {
@@ -28,6 +29,7 @@ const app = new Elysia()
   })
   .use(adminRoutes)
   .use(authRoutes)
+  .use(mantaRoutes)
   .listen(8080);
 
 console.log(`Backend running on http://localhost:${app.server?.port}`);
