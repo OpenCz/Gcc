@@ -15,3 +15,11 @@ export interface SubjectServiceInput {
   tags: string;
   file: File;
 }
+
+export interface SubjectProposeInput {
+  name: string;
+  description?: string;
+  difficulty: string;
+  tags?: string;
+  file?: File;
+}

@@ -1,6 +1,6 @@
 import type { Difficulty } from "@prisma/client";
 import { subjectModel } from "../models/subject";
-import type { SubjectServiceInput } from "../types/subject";
+import type { SubjectServiceInput, SubjectProposeInput } from "../types/subject";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
