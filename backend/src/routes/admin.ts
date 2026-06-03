@@ -1,5 +1,5 @@
 import Elysia, { t } from "elysia";
-import { adminAuth } from "../utils/adminAuth";
+import { adminAuth } from "../middlewares/adminAuth";
 import { subjectService } from "../services/subject";
 
 export const adminRoutes = new Elysia({ prefix: "/admin" })

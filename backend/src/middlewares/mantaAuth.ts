@@ -1,5 +1,6 @@
 import Elysia from "elysia";
 import { authService } from "../services/auth";
+import type { JwtPayload } from "../types/auth";
 
 export const mantaAuth = new Elysia({ name: "mantaAuth" })
   .derive({ as: "scoped" }, async ({ cookie, set }) => {
@@ -8,7 +9,7 @@ export const mantaAuth = new Elysia({ name: "mantaAuth" })
       set.status = 401;
       throw new Error("Unauthorized");
     }
-    let payload: { userId: number; role: string; email: string };
+    let payload: JwtPayload;
     try {
       payload = await authService.verifyToken(raw);
     } catch {

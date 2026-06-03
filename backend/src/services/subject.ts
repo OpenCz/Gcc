@@ -1,5 +1,6 @@
 import type { Difficulty } from "@prisma/client";
 import { subjectModel } from "../models/subject";
+import type { SubjectServiceInput } from "../types/subject";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
@@ -18,13 +19,7 @@ const DIFFICULTY_LABEL: Record<Difficulty, string> = {
 const UPLOADS_DIR = join(import.meta.dir, "../../uploads");
 
 export const subjectService = {
-  create: async (data: {
-    name: string;
-    description: string;
-    difficulty: string;
-    tags: string;
-    file: File;
-  }) => {
+  create: async (data: SubjectServiceInput) => {
     const difficulty = DIFFICULTY_MAP[data.difficulty];
     if (!difficulty) throw new Error(`Difficulté invalide: ${data.difficulty}`);
 
