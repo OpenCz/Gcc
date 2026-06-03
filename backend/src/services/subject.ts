@@ -46,11 +46,16 @@ export const subjectService = {
     });
   },
 
+  getVisible: async () => {
+    const rows = await subjectModel.findAllVisible();
+    return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
+
   getAll: async () => {
     const rows = await subjectModel.findAll();
-    return rows.map(s => ({
-      ...s,
-      difficulty: DIFFICULTY_LABEL[s.difficulty],
-    }));
+    return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
   },
+
+  setVisible: (id: number, visible: boolean) =>
+    subjectModel.setVisible(id, visible),
 };
