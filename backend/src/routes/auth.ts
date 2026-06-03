@@ -31,7 +31,10 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
   })
   .get("/me", async ({ headers, set }) => {
     const raw = headers["authorization"]?.replace("Bearer ", "");
-    if (!raw) { set.status = 401; return { message: "Unauthorized" }; }
+    if (!raw) {
+        set.status = 401;
+        return { message: "Unauthorized" };
+    }
     try {
       const payload = await authService.verifyToken(raw);
       return { user: payload };

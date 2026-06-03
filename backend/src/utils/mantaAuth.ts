@@ -8,15 +8,11 @@ export const mantaAuth = new Elysia({ name: "mantaAuth" })
       set.status = 401;
       throw new Error("Unauthorized");
     }
-    try {
-      const payload = await authService.verifyToken(raw);
-      if (payload.role !== "MANTA" && payload.role !== "PEDA") {
-        set.status = 403;
-        throw new Error("Forbidden");
-      }
-      return { user: payload };
-    } catch {
-      set.status = 401;
-      throw new Error("Invalid token");
+
+    const payload = await authService.verifyToken(raw);
+    if (payload.role !== "MANTA" && payload.role !== "PEDA") {
+      set.status = 403;
+      throw new Error("Forbidden");
     }
+    return { user: payload };
   });
