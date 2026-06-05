@@ -19,6 +19,12 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
     const subjects = await subjectService.getProposed();
     return { subjects };
   })
+  .delete("/subjects/proposed/:id", async ({ params, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    await subjectService.rejectProposal(id);
+    return { success: true };
+  })
   .patch("/subjects/:id", async ({ params, body, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }

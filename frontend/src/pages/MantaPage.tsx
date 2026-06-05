@@ -220,6 +220,14 @@ function ProposeTab() {
       .catch(() => {});
   };
 
+  const cancelProposal = async (id: number) => {
+    setProposals(prev => prev.filter(s => s.id !== id));
+    await fetch(`${API}/manta/subjects/proposed/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+  };
+
   useEffect(() => { loadProposals(); }, []);
 
   const reset = () => {
@@ -421,16 +429,30 @@ function ProposeTab() {
               background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
               borderRadius: 10, padding: "12px 16px",
             }}>
-              <Group gap="sm" wrap="wrap">
-                <Text fw={600} size="sm">{s.name}</Text>
-                <Badge level={s.difficulty as Subject["difficulty"]} />
-                {s.tags.map((t: string) => (
-                  <span key={t} style={{
-                    background: "var(--epi-bg)", color: "var(--epi-muted)",
-                    fontSize: 11, fontWeight: 600, padding: "2px 7px",
-                    borderRadius: 15, border: "1px solid var(--epi-border)",
-                  }}>{t}</span>
-                ))}
+              <Group justify="space-between" wrap="nowrap" gap="md">
+                <Group gap="sm" wrap="wrap" style={{ minWidth: 0, flex: 1 }}>
+                  <Text fw={600} size="sm">{s.name}</Text>
+                  <Badge level={s.difficulty as Subject["difficulty"]} />
+                  {s.tags.map((t: string) => (
+                    <span key={t} style={{
+                      background: "var(--epi-bg)", color: "var(--epi-muted)",
+                      fontSize: 11, fontWeight: 600, padding: "2px 7px",
+                      borderRadius: 15, border: "1px solid var(--epi-border)",
+                    }}>{t}</span>
+                  ))}
+                </Group>
+                <button
+                  onClick={() => cancelProposal(s.id)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    background: "none", border: "1px solid var(--epi-border)",
+                    color: "var(--epi-ghost)", fontSize: 11, fontWeight: 600,
+                    padding: "4px 10px", borderRadius: 15,
+                    cursor: "pointer", fontFamily: "inherit", flexShrink: 0,
+                  }}
+                >
+                  <IconX size={11} /> Annuler
+                </button>
               </Group>
             </div>
           ))}
