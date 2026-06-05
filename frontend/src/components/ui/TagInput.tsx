@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { IconX } from "@tabler/icons-react";
 
-export function TagInput({ tags, onChange }: { tags: string[]; onChange: (t: string[]) => void }) {
+const DEFAULT_TAGS = ["HTML", "CSS", "JavaScript", "C", "C++", "Python", "Java", "Linux"];
+
+export function TagInput({ tags, onChange, suggestions = DEFAULT_TAGS }: {
+  tags: string[];
+  onChange: (t: string[]) => void;
+  suggestions?: string[];
+}) {
   const [input, setInput] = useState("");
 
   const addTag = (raw: string) => {
@@ -55,5 +61,30 @@ export function TagInput({ tags, onChange }: { tags: string[]; onChange: (t: str
         }}
       />
     </div>
+    {suggestions.length > 0 && (
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+        {suggestions.map(s => {
+          const selected = tags.includes(s);
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => !selected && onChange([...tags, s])}
+              style={{
+                background: selected ? "rgba(128,157,253,0.1)" : "none",
+                border: `1px solid ${selected ? "var(--epi-accent)" : "var(--epi-border)"}`,
+                color: selected ? "var(--epi-accent)" : "var(--epi-ghost)",
+                fontSize: 11, fontWeight: 600,
+                padding: "3px 10px", borderRadius: 15,
+                cursor: selected ? "default" : "pointer",
+                fontFamily: "inherit", transition: "border-color 0.15s, color 0.15s",
+              }}
+            >
+              {s}
+            </button>
+          );
+        })}
+      </div>
+    )}
   );
 }
