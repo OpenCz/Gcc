@@ -6,6 +6,7 @@ import {
   IconX, IconMapPin, IconUsers,
 } from "@tabler/icons-react";
 import { Badge } from "../components/ui/Badge";
+import { TagInput } from "../components/ui/TagInput";
 import epitechLogo from "../assets/img/epitech_logo.png";
 import type { Subject } from "../config";
 
@@ -204,7 +205,7 @@ function ProposeTab() {
   const [name, setName] = useState("");
   const [description, setDesc] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -223,7 +224,7 @@ function ProposeTab() {
 
   const reset = () => {
     setName(""); setDesc(""); setDifficulty("Débutant");
-    setTags(""); setPdfFile(null); setSuccess(false); setError("");
+    setTags([]); setPdfFile(null); setSuccess(false); setError("");
   };
 
   const submit = async (e: { preventDefault: () => void }) => {
@@ -235,7 +236,7 @@ function ProposeTab() {
       fd.append("name", name);
       fd.append("description", description);
       fd.append("difficulty", difficulty);
-      fd.append("tags", tags);
+      fd.append("tags", tags.join(","));
       if (pdfFile) fd.append("file", pdfFile);
       const res = await fetch(`${API}/manta/subjects/propose`, {
         method: "POST",
@@ -346,18 +347,7 @@ function ProposeTab() {
 
                 <div>
                   <Text size="sm" fw={600} mb={8}>Tags</Text>
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
-                    borderRadius: 8, padding: "10px 14px",
-                  }}>
-                    <input
-                      value={tags}
-                      onChange={e => setTags(e.target.value)}
-                      placeholder="C, Rust, Python… (séparés par des virgules)"
-                      style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
-                    />
-                  </div>
+                  <TagInput tags={tags} onChange={setTags} />
                 </div>
 
                 <div>
