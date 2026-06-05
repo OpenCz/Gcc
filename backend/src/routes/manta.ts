@@ -15,6 +15,10 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
     const subjects = await subjectService.getAll();
     return { subjects };
   })
+  .get("/subjects/proposed", async () => {
+    const subjects = await subjectService.getProposed();
+    return { subjects };
+  })
   .patch("/subjects/:id", async ({ params, body, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }

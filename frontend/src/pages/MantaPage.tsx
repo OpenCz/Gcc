@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Stack, Group, Text, ScrollArea, Tabs } from "@mantine/core";
+import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconEye, IconEyeOff, IconLogout, IconBook,
   IconCalendarEvent, IconPlus, IconCheck, IconUpload,
@@ -11,6 +11,7 @@ import type { Subject } from "../config";
 
 const API = "http://localhost:8080";
 
+type Tab = "subjects" | "propose" | "events";
 type Difficulty = "Débutant" | "Intermédiaire" | "Avancé";
 
 interface SubjectWithVisible extends Subject {
@@ -34,6 +35,73 @@ const DIFF_COLORS: Record<Difficulty, string> = {
   "Intermédiaire": "var(--epi-intermediate)",
   "Avancé": "var(--epi-advanced)",
 };
+
+const NAV = [
+  { id: "subjects" as Tab, label: "Sujets", Icon: IconBook },
+  { id: "propose" as Tab, label: "Proposer", Icon: IconPlus },
+  { id: "events" as Tab, label: "Événements", Icon: IconCalendarEvent },
+];
+
+function MantaSidebar({ activeTab, onNavigate, onLogout }: {
+  activeTab: Tab;
+  onNavigate: (t: Tab) => void;
+  onLogout: () => void;
+}) {
+  return (
+    <div style={{
+      width: 220, background: "var(--epi-panel)",
+      borderRight: "1px solid var(--epi-border)",
+      display: "flex", flexDirection: "column",
+      padding: "16px 12px", flexShrink: 0,
+    }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+        <a href="/" style={{
+          display: "flex", alignItems: "center", gap: 10,
+          color: "var(--epi-muted)", fontSize: 13, fontWeight: 500,
+          padding: "9px 12px", borderRadius: 8,
+          textDecoration: "none",
+        }}>
+          Accueil
+        </a>
+        {NAV.map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            onClick={() => onNavigate(id)}
+            style={{
+              display: "flex", alignItems: "center", gap: 10,
+              background: activeTab === id ? "rgba(128,157,253,0.1)" : "none",
+              border: "none",
+              color: activeTab === id ? "var(--epi-accent)" : "var(--epi-muted)",
+              fontSize: 13, fontWeight: activeTab === id ? 700 : 500,
+              padding: "9px 12px", borderRadius: 8,
+              cursor: "pointer", transition: "background 0.15s, color 0.15s",
+              fontFamily: "inherit", width: "100%", textAlign: "left",
+            }}
+          >
+            <Icon size={15} />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={onLogout}
+        style={{
+          display: "flex", alignItems: "center", gap: 10,
+          background: "none", border: "none",
+          color: "var(--epi-ghost)", fontSize: 13, fontWeight: 500,
+          padding: "9px 12px", borderRadius: 8,
+          cursor: "pointer", fontFamily: "inherit",
+          width: "100%", textAlign: "left",
+        }}
+      >
+        <IconLogout size={15} />
+        Se déconnecter
+      </button>
+    </div>
+  );
+}
+
 
 function SubjectsTab({ token }: { token: string }) {
   const [subjects, setSubjects] = useState<SubjectWithVisible[]>([]);
@@ -142,13 +210,23 @@ function ProposeTab() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [proposals, setProposals] = useState<SubjectWithVisible[]>([]);
+
+  const loadProposals = () => {
+    fetch(`${API}/manta/subjects/proposed`, { credentials: "include" })
+      .then(r => r.json() as Promise<{ subjects?: SubjectWithVisible[] }>)
+      .then(d => setProposals(d.subjects ?? []))
+      .catch(() => {});
+  };
+
+  useEffect(() => { loadProposals(); }, []);
 
   const reset = () => {
     setName(""); setDesc(""); setDifficulty("Débutant");
     setTags(""); setPdfFile(null); setSuccess(false); setError("");
   };
 
-  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     if (!name) return;
     setLoading(true); setError("");
@@ -166,6 +244,7 @@ function ProposeTab() {
       });
       if (res.ok) {
         setSuccess(true);
+        loadProposals();
       } else {
         const body = await res.json().catch(() => ({}));
         setError((body as { message?: string }).message ?? "Erreur serveur.");
@@ -177,169 +256,197 @@ function ProposeTab() {
     }
   };
 
-  if (success) return (
-    <Stack gap="lg" align="center" mt="xl">
-      <div style={{
-        width: 56, height: 56, borderRadius: "50%",
-        background: "rgba(74,222,128,0.1)", border: "1px solid var(--epi-beginner)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <IconCheck size={24} color="var(--epi-beginner)" />
-      </div>
-      <Stack gap={6} align="center">
-        <Text fw={700} size="lg">Sujet proposé !</Text>
-        <Text size="sm" c="dimmed">L'équipe pédagogique pourra le valider.</Text>
-      </Stack>
-      <button onClick={reset} style={{
-        display: "flex", alignItems: "center", gap: 6,
-        background: "var(--epi-accent)", color: "#fff",
-        border: "none", fontSize: 14, fontWeight: 700,
-        padding: "10px 24px", borderRadius: 8,
-        cursor: "pointer", fontFamily: "inherit",
-      }}>
-        <IconPlus size={14} />
-        Proposer un autre
-      </button>
-    </Stack>
-  );
-
   return (
-    <form onSubmit={submit}>
-      <Stack gap="lg">
-        <div style={{ background: "var(--epi-surface)", border: "1px solid var(--epi-border)", borderRadius: 12, padding: 28 }}>
+    <Stack gap="xl">
+      {success ? (
+        <Stack gap="lg" align="center">
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%",
+            background: "rgba(74,222,128,0.1)", border: "1px solid var(--epi-beginner)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <IconCheck size={24} color="var(--epi-beginner)" />
+          </div>
+          <Stack gap={6} align="center">
+            <Text fw={700} size="lg">Sujet proposé !</Text>
+            <Text size="sm" c="dimmed">L'équipe pédagogique pourra le valider.</Text>
+          </Stack>
+          <button onClick={reset} style={{
+            display: "flex", alignItems: "center", gap: 6,
+            background: "var(--epi-accent)", color: "#fff",
+            border: "none", fontSize: 14, fontWeight: 700,
+            padding: "10px 24px", borderRadius: 8,
+            cursor: "pointer", fontFamily: "inherit",
+          }}>
+            <IconPlus size={14} />
+            Proposer un autre
+          </button>
+        </Stack>
+      ) : (
+        <form onSubmit={submit}>
           <Stack gap="lg">
-            <div>
-              <Text size="sm" fw={600} mb={8}>Titre <span style={{ color: "var(--epi-advanced)" }}>*</span></Text>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10,
-                background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
-                borderRadius: 8, padding: "10px 14px",
-              }}>
-                <IconBook size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
-                <input
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  placeholder="ex : Workshop Rust"
-                  required
-                  style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
-                />
-              </div>
-            </div>
+            <div style={{ background: "var(--epi-surface)", border: "1px solid var(--epi-border)", borderRadius: 12, padding: 28 }}>
+              <Stack gap="lg">
+                <div>
+                  <Text size="sm" fw={600} mb={8}>Titre <span style={{ color: "var(--epi-advanced)" }}>*</span></Text>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
+                    borderRadius: 8, padding: "10px 14px",
+                  }}>
+                    <IconBook size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                    <input
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      placeholder="ex : Workshop Rust"
+                      required
+                      style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+                    />
+                  </div>
+                </div>
 
-            <div>
-              <Text size="sm" fw={600} mb={8}>Description</Text>
-              <textarea
-                value={description}
-                onChange={e => setDesc(e.target.value)}
-                placeholder="Décris brièvement le contenu du sujet…"
-                rows={3}
-                style={{
-                  width: "100%", background: "var(--epi-bg)",
-                  border: "1px solid var(--epi-border)", borderRadius: 8,
-                  padding: "10px 14px", color: "#fff", fontSize: 14,
-                  fontFamily: "inherit", resize: "vertical", outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
+                <div>
+                  <Text size="sm" fw={600} mb={8}>Description</Text>
+                  <textarea
+                    value={description}
+                    onChange={e => setDesc(e.target.value)}
+                    placeholder="Décris brièvement le contenu du sujet…"
+                    rows={3}
+                    style={{
+                      width: "100%", background: "var(--epi-bg)",
+                      border: "1px solid var(--epi-border)", borderRadius: 8,
+                      padding: "10px 14px", color: "#fff", fontSize: 14,
+                      fontFamily: "inherit", resize: "vertical", outline: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                </div>
 
-            <div>
-              <Text size="sm" fw={600} mb={8}>Difficulté</Text>
-              <Group gap="xs">
-                {(["Débutant", "Intermédiaire", "Avancé"] as Difficulty[]).map(d => {
-                  const active = difficulty === d;
-                  const color = DIFF_COLORS[d];
-                  return (
-                    <button key={d} type="button" onClick={() => setDifficulty(d)} style={{
-                      background: active ? color : "none",
-                      border: `1px solid ${active ? color : "var(--epi-border)"}`,
-                      color: active ? "#111" : "var(--epi-muted)",
-                      fontSize: 13, fontWeight: 600,
-                      padding: "6px 16px", borderRadius: 20,
-                      cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
-                    }}>
-                      {d}
-                    </button>
-                  );
-                })}
+                <div>
+                  <Text size="sm" fw={600} mb={8}>Difficulté</Text>
+                  <Group gap="xs">
+                    {(["Débutant", "Intermédiaire", "Avancé"] as Difficulty[]).map(d => {
+                      const active = difficulty === d;
+                      const color = DIFF_COLORS[d];
+                      return (
+                        <button key={d} type="button" onClick={() => setDifficulty(d)} style={{
+                          background: active ? color : "none",
+                          border: `1px solid ${active ? color : "var(--epi-border)"}`,
+                          color: active ? "#111" : "var(--epi-muted)",
+                          fontSize: 13, fontWeight: 600,
+                          padding: "6px 16px", borderRadius: 20,
+                          cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                        }}>
+                          {d}
+                        </button>
+                      );
+                    })}
+                  </Group>
+                </div>
+
+                <div>
+                  <Text size="sm" fw={600} mb={8}>Tags</Text>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
+                    borderRadius: 8, padding: "10px 14px",
+                  }}>
+                    <input
+                      value={tags}
+                      onChange={e => setTags(e.target.value)}
+                      placeholder="C, Rust, Python… (séparés par des virgules)"
+                      style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+                  <div
+                    onClick={() => document.getElementById("propose-file")?.click()}
+                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={e => {
+                      e.preventDefault(); setDragOver(false);
+                      const f = e.dataTransfer.files[0];
+                      if (f?.type === "application/pdf") setPdfFile(f);
+                    }}
+                    style={{
+                      border: `2px dashed ${dragOver ? "var(--epi-accent)" : pdfFile ? "var(--epi-beginner)" : "var(--epi-border)"}`,
+                      borderRadius: 10, padding: "24px 20px",
+                      textAlign: "center", cursor: "pointer", transition: "border-color 0.2s",
+                      background: dragOver ? "rgba(128,157,253,0.05)" : "none",
+                    }}
+                  >
+                    {pdfFile ? (
+                      <Group justify="center" gap="xs">
+                        <IconCheck size={16} color="var(--epi-beginner)" />
+                        <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{pdfFile.name}</Text>
+                        <button type="button" onClick={e => { e.stopPropagation(); setPdfFile(null); }}
+                          style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
+                          <IconX size={12} />
+                        </button>
+                      </Group>
+                    ) : (
+                      <Group justify="center" gap="xs">
+                        <IconUpload size={16} color="var(--epi-ghost)" />
+                        <Text size="sm" c="dimmed">Glisse le PDF ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
+                      </Group>
+                    )}
+                  </div>
+                  <input id="propose-file" type="file" accept="application/pdf" style={{ display: "none" }}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) setPdfFile(f); }} />
+                </div>
+
+                {error && <Text size="sm" style={{ color: "var(--epi-advanced)" }}>{error}</Text>}
+
+                <button
+                  type="submit"
+                  disabled={loading || !name}
+                  style={{
+                    background: name ? "var(--epi-accent)" : "var(--epi-bg)",
+                    border: "1px solid var(--epi-border)",
+                    color: name ? "#fff" : "var(--epi-ghost)",
+                    fontSize: 14, fontWeight: 700,
+                    padding: "11px", borderRadius: 8,
+                    cursor: name && !loading ? "pointer" : "not-allowed",
+                    transition: "0.2s", fontFamily: "inherit", width: "100%",
+                  }}
+                >
+                  {loading ? "Envoi…" : "Proposer le sujet"}
+                </button>
+              </Stack>
+            </div>
+          </Stack>
+        </form>
+      )}
+
+      {proposals.length > 0 && (
+        <Stack gap="sm">
+          <Text size="xs" fw={600} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.06em" }}>
+            Suggestions en attente ({proposals.length})
+          </Text>
+          {proposals.map(s => (
+            <div key={s.id} style={{
+              background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
+              borderRadius: 10, padding: "12px 16px",
+            }}>
+              <Group gap="sm" wrap="wrap">
+                <Text fw={600} size="sm">{s.name}</Text>
+                <Badge level={s.difficulty as Subject["difficulty"]} />
+                {s.tags.map((t: string) => (
+                  <span key={t} style={{
+                    background: "var(--epi-bg)", color: "var(--epi-muted)",
+                    fontSize: 11, fontWeight: 600, padding: "2px 7px",
+                    borderRadius: 15, border: "1px solid var(--epi-border)",
+                  }}>{t}</span>
+                ))}
               </Group>
             </div>
-
-            <div>
-              <Text size="sm" fw={600} mb={8}>Tags</Text>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10,
-                background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
-                borderRadius: 8, padding: "10px 14px",
-              }}>
-                <input
-                  value={tags}
-                  onChange={e => setTags(e.target.value)}
-                  placeholder="C, Rust, Python… (séparés par des virgules)"
-                  style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
-              <div
-                onClick={() => document.getElementById("propose-file")?.click()}
-                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={e => {
-                  e.preventDefault(); setDragOver(false);
-                  const f = e.dataTransfer.files[0];
-                  if (f?.type === "application/pdf") setPdfFile(f);
-                }}
-                style={{
-                  border: `2px dashed ${dragOver ? "var(--epi-accent)" : pdfFile ? "var(--epi-beginner)" : "var(--epi-border)"}`,
-                  borderRadius: 10, padding: "24px 20px",
-                  textAlign: "center", cursor: "pointer", transition: "border-color 0.2s",
-                  background: dragOver ? "rgba(128,157,253,0.05)" : "none",
-                }}
-              >
-                {pdfFile ? (
-                  <Group justify="center" gap="xs">
-                    <IconCheck size={16} color="var(--epi-beginner)" />
-                    <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{pdfFile.name}</Text>
-                    <button type="button" onClick={e => { e.stopPropagation(); setPdfFile(null); }}
-                      style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
-                      <IconX size={12} />
-                    </button>
-                  </Group>
-                ) : (
-                  <Group justify="center" gap="xs">
-                    <IconUpload size={16} color="var(--epi-ghost)" />
-                    <Text size="sm" c="dimmed">Glisse le PDF ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
-                  </Group>
-                )}
-              </div>
-              <input id="propose-file" type="file" accept="application/pdf" style={{ display: "none" }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) setPdfFile(f); }} />
-            </div>
-
-            {error && <Text size="sm" style={{ color: "var(--epi-advanced)" }}>{error}</Text>}
-
-            <button
-              type="submit"
-              disabled={loading || !name}
-              style={{
-                background: name ? "var(--epi-accent)" : "var(--epi-bg)",
-                border: "1px solid var(--epi-border)",
-                color: name ? "#fff" : "var(--epi-ghost)",
-                fontSize: 14, fontWeight: 700,
-                padding: "11px", borderRadius: 8,
-                cursor: name && !loading ? "pointer" : "not-allowed",
-                transition: "0.2s", fontFamily: "inherit", width: "100%",
-              }}
-            >
-              {loading ? "Envoi…" : "Proposer le sujet"}
-            </button>
-          </Stack>
-        </div>
-      </Stack>
-    </form>
+          ))}
+        </Stack>
+      )}
+    </Stack>
   );
 }
 
@@ -415,7 +522,7 @@ function EventsTab() {
                 disabled={full && !ev.isRegistered}
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
-                  background: ev.isRegistered ? "rgba(128,157,253,0.1)" : full ? "none" : "none",
+                  background: ev.isRegistered ? "rgba(128,157,253,0.1)" : "none",
                   border: `1px solid ${ev.isRegistered ? "var(--epi-accent)" : "var(--epi-border)"}`,
                   color: ev.isRegistered ? "var(--epi-accent)" : full ? "var(--epi-ghost)" : "var(--epi-muted)",
                   fontSize: 12, fontWeight: 700,
@@ -435,6 +542,7 @@ function EventsTab() {
 }
 
 export function MantaPage() {
+  const [tab, setTab] = useState<Tab>("subjects");
   const [userName, setUserName] = useState("");
   const [unauthorized, setUnauthorized] = useState(false);
   const [ready, setReady] = useState(false);
@@ -472,42 +580,20 @@ export function MantaPage() {
           <Text size="sm" c="dimmed">/</Text>
           <Text size="sm" fw={600}>Espace Manta</Text>
         </Group>
-        <Group gap="md">
-          {userName && <Text size="xs" c="dimmed">{userName}</Text>}
-          <button onClick={logout} style={{
-            display: "flex", alignItems: "center", gap: 6,
-            background: "none", border: "1px solid var(--epi-border)",
-            color: "var(--epi-muted)", fontSize: 12, fontWeight: 600,
-            padding: "5px 12px", borderRadius: 6, cursor: "pointer",
-            fontFamily: "inherit", transition: "0.2s",
-          }}>
-            <IconLogout size={13} />
-            Se déconnecter
-          </button>
-        </Group>
+        {userName && <Text size="xs" c="dimmed">{userName}</Text>}
       </div>
 
-      <ScrollArea flex={1}>
-        <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 24px" }}>
-          <Tabs defaultValue="subjects" color="epitech">
-            <Tabs.List mb="xl">
-              <Tabs.Tab value="subjects" leftSection={<IconBook size={14} />}>Sujets</Tabs.Tab>
-              <Tabs.Tab value="propose" leftSection={<IconPlus size={14} />}>Proposer un sujet</Tabs.Tab>
-              <Tabs.Tab value="events" leftSection={<IconCalendarEvent size={14} />}>Événements à venir</Tabs.Tab>
-            </Tabs.List>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <MantaSidebar activeTab={tab} onNavigate={setTab} onLogout={logout} />
 
-            <Tabs.Panel value="subjects">
-              <SubjectsTab token={userName} />
-            </Tabs.Panel>
-            <Tabs.Panel value="propose">
-              <ProposeTab />
-            </Tabs.Panel>
-            <Tabs.Panel value="events">
-              <EventsTab />
-            </Tabs.Panel>
-          </Tabs>
-        </div>
-      </ScrollArea>
+        <ScrollArea flex={1} style={{ background: "var(--epi-bg)" }}>
+          <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 24px" }}>
+            {tab === "subjects" && <SubjectsTab token={userName} />}
+            {tab === "propose" && <ProposeTab />}
+            {tab === "events" && <EventsTab />}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

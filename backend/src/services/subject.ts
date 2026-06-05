@@ -78,8 +78,18 @@ export const subjectService = {
       difficulty,
       tags,
       files,
+      proposed: true,
     });
   },
+
+  getProposed: async () => {
+    const rows = await subjectModel.findProposed();
+    return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
+
+  approveProposal: (id: number) => subjectModel.approve(id),
+
+  rejectProposal: (id: number) => subjectModel.deleteById(id),
 
   setVisible: (id: number, visible: boolean) =>
     subjectModel.setVisible(id, visible),

@@ -6,6 +6,7 @@ export interface SubjectCreateData {
   difficulty: Difficulty;
   tags: string[];
   files: string[];
+  proposed?: boolean;
 }
 
 export interface SubjectServiceInput {

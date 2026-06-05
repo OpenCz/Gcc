@@ -49,6 +49,7 @@ model Subject {
   files       String[]
   isNew       Boolean    @default(true)
   visible     Boolean    @default(false)
+  proposed    Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }

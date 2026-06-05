@@ -41,6 +41,22 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
     const subjects = await subjectService.getAll();
     return { subjects };
   })
+  .get("/subjects/proposed", async () => {
+    const subjects = await subjectService.getProposed();
+    return { subjects };
+  })
+  .post("/subjects/:id/approve", async ({ params, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    await subjectService.approveProposal(id);
+    return { success: true };
+  })
+  .delete("/subjects/:id", async ({ params, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    await subjectService.rejectProposal(id);
+    return { success: true };
+  })
   .post("/events", async ({ body }) => {
     const event = await eventService.create({
       name: body.name,
