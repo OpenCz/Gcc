@@ -89,7 +89,14 @@ export const subjectService = {
 
   approveProposal: (id: number) => subjectModel.approve(id),
 
-  rejectProposal: (id: number) => subjectModel.deleteById(id),
+  rejectProposal: (id: number, reason: string) => subjectModel.reject(id, reason),
+
+  cancelProposal: (id: number) => subjectModel.deleteById(id),
+
+  getRejectedProposals: async () => {
+    const rows = await subjectModel.findRejected();
+    return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
 
   setVisible: (id: number, visible: boolean) =>
     subjectModel.setVisible(id, visible),

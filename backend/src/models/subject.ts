@@ -6,13 +6,16 @@ export const subjectModel = {
     prisma.subject.create({ data }),
 
   findAllVisible: () =>
-    prisma.subject.findMany({ where: { visible: true, proposed: false }, orderBy: { createdAt: "desc" } }),
+    prisma.subject.findMany({ where: { visible: true, proposed: false, rejected: false }, orderBy: { createdAt: "desc" } }),
 
   findAll: () =>
-    prisma.subject.findMany({ where: { proposed: false }, orderBy: { createdAt: "desc" } }),
+    prisma.subject.findMany({ where: { proposed: false, rejected: false }, orderBy: { createdAt: "desc" } }),
 
   findProposed: () =>
-    prisma.subject.findMany({ where: { proposed: true }, orderBy: { createdAt: "desc" } }),
+    prisma.subject.findMany({ where: { proposed: true, rejected: false }, orderBy: { createdAt: "desc" } }),
+
+  findRejected: () =>
+    prisma.subject.findMany({ where: { rejected: true }, orderBy: { updatedAt: "desc" } }),
 
   findById: (id: number) =>
     prisma.subject.findUnique({ where: { id } }),
@@ -22,6 +25,9 @@ export const subjectModel = {
 
   approve: (id: number) =>
     prisma.subject.update({ where: { id }, data: { proposed: false } }),
+
+  reject: (id: number, reason: string) =>
+    prisma.subject.update({ where: { id }, data: { proposed: false, rejected: true, rejectionReason: reason } }),
 
   deleteById: (id: number) =>
     prisma.subject.delete({ where: { id } }),

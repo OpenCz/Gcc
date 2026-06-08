@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconLock, IconLogout, IconUpload, IconX, IconCheck,
-  IconPlus, IconBook, IconInbox,
+  IconPlus, IconBook, IconInbox, IconFileText,
 } from "@tabler/icons-react";
 import epitechLogo from "../assets/img/epitech_logo.png";
 import { Badge } from "../components/ui/Badge";
@@ -439,6 +439,9 @@ function SuggestionsTab({ token }: { token: string }) {
   const [subjects, setSubjects] = useState<ProposedSubject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [rejectTarget, setRejectTarget] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/admin/subjects/proposed`, {
@@ -458,12 +461,18 @@ function SuggestionsTab({ token }: { token: string }) {
     });
   };
 
-  const reject = async (id: number) => {
-    setSubjects(prev => prev.filter(s => s.id !== id));
-    await fetch(`${API}/admin/subjects/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
+  const confirmReject = async () => {
+    if (rejectTarget === null || !rejectReason.trim()) return;
+    setRejectLoading(true);
+    setSubjects(prev => prev.filter(s => s.id !== rejectTarget));
+    await fetch(`${API}/admin/subjects/${rejectTarget}/reject`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: rejectReason.trim() }),
     });
+    setRejectTarget(null);
+    setRejectReason("");
+    setRejectLoading(false);
   };
 
   if (loading) return <Text c="dimmed" ta="center">Chargement…</Text>;
@@ -502,6 +511,16 @@ function SuggestionsTab({ token }: { token: string }) {
                   ))}
                 </Group>
               )}
+              {s.files[0] && (
+                <a href={`${API}/uploads/${s.files[0]}`} target="_blank" rel="noopener noreferrer" style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                  textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                  border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                }}>
+                  <IconFileText size={11} /> PDF
+                </a>
+              )}
             </Stack>
 
             <Group gap="xs" style={{ flexShrink: 0 }}>
@@ -518,7 +537,7 @@ function SuggestionsTab({ token }: { token: string }) {
                 <IconCheck size={12} /> Approuver
               </button>
               <button
-                onClick={() => reject(s.id)}
+                onClick={() => setRejectTarget(s.id)}
                 style={{
                   display: "flex", alignItems: "center", gap: 5,
                   background: "rgba(248,113,113,0.1)", border: "1px solid var(--epi-advanced)",
@@ -533,6 +552,76 @@ function SuggestionsTab({ token }: { token: string }) {
           </Group>
         </div>
       ))}
+
+      {rejectTarget !== null && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1000,
+          background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 24,
+        }}>
+          <div style={{
+            background: "var(--epi-panel)", border: "1px solid var(--epi-border)",
+            borderRadius: 14, padding: 28, width: "100%", maxWidth: 460,
+          }}>
+            <Stack gap="lg">
+              <Stack gap={4}>
+                <Text fw={700} size="md">Refuser la suggestion</Text>
+                <Text size="sm" c="dimmed">Explique au Manta pourquoi son sujet n'est pas retenu.</Text>
+              </Stack>
+
+              <div>
+                <Text size="sm" fw={600} mb={8}>Raison <span style={{ color: "var(--epi-advanced)" }}>*</span></Text>
+                <textarea
+                  autoFocus
+                  value={rejectReason}
+                  onChange={e => setRejectReason(e.target.value)}
+                  placeholder="ex : Sujet trop similaire à un existant, niveau inadapté…"
+                  rows={4}
+                  style={{
+                    width: "100%", background: "var(--epi-bg)",
+                    border: "1px solid var(--epi-border)", borderRadius: 8,
+                    padding: "10px 14px", color: "#fff", fontSize: 14,
+                    fontFamily: "inherit", resize: "vertical", outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              <Group justify="flex-end" gap="sm">
+                <button
+                  onClick={() => { setRejectTarget(null); setRejectReason(""); }}
+                  style={{
+                    background: "none", border: "1px solid var(--epi-border)",
+                    color: "var(--epi-muted)", fontSize: 13, fontWeight: 600,
+                    padding: "8px 18px", borderRadius: 8,
+                    cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmReject}
+                  disabled={rejectLoading || !rejectReason.trim()}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    background: rejectReason.trim() ? "rgba(248,113,113,0.15)" : "none",
+                    border: `1px solid ${rejectReason.trim() ? "var(--epi-advanced)" : "var(--epi-border)"}`,
+                    color: rejectReason.trim() ? "var(--epi-advanced)" : "var(--epi-ghost)",
+                    fontSize: 13, fontWeight: 700,
+                    padding: "8px 18px", borderRadius: 8,
+                    cursor: rejectReason.trim() && !rejectLoading ? "pointer" : "not-allowed",
+                    fontFamily: "inherit", transition: "0.15s",
+                  }}
+                >
+                  <IconX size={13} />
+                  {rejectLoading ? "Refus…" : "Confirmer le refus"}
+                </button>
+              </Group>
+            </Stack>
+          </div>
+        </div>
+      )}
     </Stack>
   );
 }

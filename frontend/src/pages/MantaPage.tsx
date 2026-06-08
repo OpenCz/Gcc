@@ -3,7 +3,7 @@ import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconEye, IconEyeOff, IconLogout, IconBook,
   IconCalendarEvent, IconPlus, IconCheck, IconUpload,
-  IconX, IconMapPin, IconUsers,
+  IconX, IconMapPin, IconUsers, IconFileText,
 } from "@tabler/icons-react";
 import { Badge } from "../components/ui/Badge";
 import { TagInput } from "../components/ui/TagInput";
@@ -176,6 +176,16 @@ function SubjectsTab({ token }: { token: string }) {
                         borderRadius: 15, border: "1px solid var(--epi-border)",
                       }}>{t}</span>
                     ))}
+                    {s.files[0] && (
+                      <a href={`${API}/uploads/${s.files[0]}`} target="_blank" rel="noopener noreferrer" style={{
+                        display: "flex", alignItems: "center", gap: 4,
+                        color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                        textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                        border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                      }}>
+                        <IconFileText size={11} /> PDF
+                      </a>
+                    )}
                   </Group>
                 </Stack>
               </Group>
@@ -212,11 +222,16 @@ function ProposeTab() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [proposals, setProposals] = useState<SubjectWithVisible[]>([]);
+  const [rejected, setRejected] = useState<(SubjectWithVisible & { rejectionReason: string | null })[]>([]);
 
   const loadProposals = () => {
     fetch(`${API}/manta/subjects/proposed`, { credentials: "include" })
       .then(r => r.json() as Promise<{ subjects?: SubjectWithVisible[] }>)
       .then(d => setProposals(d.subjects ?? []))
+      .catch(() => {});
+    fetch(`${API}/manta/subjects/rejected`, { credentials: "include" })
+      .then(r => r.json() as Promise<{ subjects?: (SubjectWithVisible & { rejectionReason: string | null })[] }>)
+      .then(d => setRejected(d.subjects ?? []))
       .catch(() => {});
   };
 
@@ -440,6 +455,16 @@ function ProposeTab() {
                       borderRadius: 15, border: "1px solid var(--epi-border)",
                     }}>{t}</span>
                   ))}
+                  {s.files[0] && (
+                    <a href={`${API}/uploads/${s.files[0]}`} target="_blank" rel="noopener noreferrer" style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                      textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                      border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                    }}>
+                      <IconFileText size={11} /> PDF
+                    </a>
+                  )}
                 </Group>
                 <button
                   onClick={() => cancelProposal(s.id)}
@@ -454,6 +479,48 @@ function ProposeTab() {
                   <IconX size={11} /> Annuler
                 </button>
               </Group>
+            </div>
+          ))}
+        </Stack>
+      )}
+
+      {rejected.length > 0 && (
+        <Stack gap="sm">
+          <Text size="xs" fw={600} c="dimmed" tt="uppercase" style={{ letterSpacing: "0.06em" }}>
+            Suggestions refusées ({rejected.length})
+          </Text>
+          {rejected.map(s => (
+            <div key={s.id} style={{
+              background: "var(--epi-surface)",
+              border: "1px solid rgba(248,113,113,0.3)",
+              borderRadius: 10, padding: "12px 16px",
+            }}>
+              <Stack gap={6}>
+                <Group gap="sm" wrap="wrap">
+                  <Text fw={600} size="sm" style={{ color: "var(--epi-muted)" }}>{s.name}</Text>
+                  <Badge level={s.difficulty as Subject["difficulty"]} />
+                  {s.files[0] && (
+                    <a href={`${API}/uploads/${s.files[0]}`} target="_blank" rel="noopener noreferrer" style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      color: "var(--epi-muted)", fontSize: 11, fontWeight: 600,
+                      textDecoration: "none", background: "none",
+                      border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                    }}>
+                      <IconFileText size={11} /> PDF
+                    </a>
+                  )}
+                </Group>
+                {s.rejectionReason && (
+                  <div style={{
+                    background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)",
+                    borderRadius: 6, padding: "8px 12px",
+                  }}>
+                    <Text size="xs" style={{ color: "var(--epi-advanced)", lineHeight: 1.5 }}>
+                      {s.rejectionReason}
+                    </Text>
+                  </div>
+                )}
+              </Stack>
             </div>
           ))}
         </Stack>

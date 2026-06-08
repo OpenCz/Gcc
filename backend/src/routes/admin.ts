@@ -51,11 +51,13 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
     await subjectService.approveProposal(id);
     return { success: true };
   })
-  .delete("/subjects/:id", async ({ params, set }) => {
+  .post("/subjects/:id/reject", async ({ params, body, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
-    await subjectService.rejectProposal(id);
+    await subjectService.rejectProposal(id, body.reason);
     return { success: true };
+  }, {
+    body: t.Object({ reason: t.String({ minLength: 1 }) }),
   })
   .post("/events", async ({ body }) => {
     const event = await eventService.create({

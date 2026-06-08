@@ -19,10 +19,14 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
     const subjects = await subjectService.getProposed();
     return { subjects };
   })
+  .get("/subjects/rejected", async () => {
+    const subjects = await subjectService.getRejectedProposals();
+    return { subjects };
+  })
   .delete("/subjects/proposed/:id", async ({ params, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
-    await subjectService.rejectProposal(id);
+    await subjectService.cancelProposal(id);
     return { success: true };
   })
   .patch("/subjects/:id", async ({ params, body, set }) => {

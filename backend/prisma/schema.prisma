@@ -49,7 +49,9 @@ model Subject {
   files       String[]
   isNew       Boolean    @default(true)
   visible     Boolean    @default(false)
-  proposed    Boolean    @default(false)
+  proposed        Boolean    @default(false)
+  rejected        Boolean    @default(false)
+  rejectionReason String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
