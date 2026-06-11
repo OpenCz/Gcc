@@ -454,10 +454,339 @@ function SubjectForm({ token }: { token: string }) {
   );
 }
 
+interface AdminSubject extends Subject {
+  id: number;
+  visible: boolean;
+}
+
 interface ProposedSubject extends Subject {
   id: number;
   visible: boolean;
   proposed: boolean;
+}
+
+function EditModal({ subject, token, onClose, onSaved }: {
+  subject: AdminSubject;
+  token: string;
+  onClose: () => void;
+  onSaved: (updated: AdminSubject) => void;
+}) {
+  const [name, setName] = useState(subject.name);
+  const [description, setDesc] = useState(subject.description);
+  const [url, setUrl] = useState(subject.url ?? "");
+  const [difficulty, setDifficulty] = useState<Difficulty>(subject.difficulty as Difficulty);
+  const [tags, setTags] = useState<string[]>(subject.tags);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [keepExisting, setKeepExisting] = useState(subject.files.length > 0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const submit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+    if (!name) return;
+    setLoading(true); setError("");
+    try {
+      const fd = new FormData();
+      fd.append("name", name);
+      fd.append("description", description);
+      fd.append("difficulty", difficulty);
+      fd.append("tags", tags.join(","));
+      if (url.trim()) fd.append("url", url.trim());
+      if (pdfFile) fd.append("file", pdfFile);
+      else if (keepExisting && subject.files.length > 0)
+        fd.append("existingFiles", subject.files.join(","));
+
+      const res = await fetch(`${API}/admin/subjects/${subject.id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      if (res.ok) {
+        const data = await res.json() as { subject: AdminSubject };
+        onSaved({ ...data.subject, difficulty });
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError((body as { message?: string }).message ?? "Erreur serveur.");
+      }
+    } catch {
+      setError("Impossible de joindre le serveur.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 1000,
+      background: "rgba(0,0,0,0.6)", backdropFilter: "blur(2px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+    }}>
+      <div style={{
+        background: "var(--epi-panel)", border: "1px solid var(--epi-border)",
+        borderRadius: 14, width: "100%", maxWidth: 560,
+        maxHeight: "90vh", overflowY: "auto",
+      }}>
+        <div style={{
+          padding: "18px 24px", borderBottom: "1px solid var(--epi-border)",
+          display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0,
+        }}>
+          <Text fw={700} size="md">Modifier le sujet</Text>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
+            <IconX size={18} />
+          </button>
+        </div>
+
+        <form onSubmit={submit}>
+          <Stack gap="lg" p={24}>
+            <div>
+              <Text size="sm" fw={600} mb={8}>Titre <span style={{ color: "var(--epi-advanced)" }}>*</span></Text>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px" }}>
+                <IconBook size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                <input value={name} onChange={e => setName(e.target.value)} required
+                  style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }} />
+              </div>
+            </div>
+
+            <div>
+              <Text size="sm" fw={600} mb={8}>Description</Text>
+              <textarea value={description} onChange={e => setDesc(e.target.value)} rows={3}
+                style={{ width: "100%", background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px", color: "#fff", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+            </div>
+
+            <div>
+              <Text size="sm" fw={600} mb={8}>Lien <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px" }}>
+                <IconLink size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                <input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://…"
+                  style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }} />
+              </div>
+            </div>
+
+            <div>
+              <Text size="sm" fw={600} mb={8}>Difficulté</Text>
+              <Group gap="xs">
+                {(["Débutant", "Intermédiaire", "Avancé"] as Difficulty[]).map(d => {
+                  const active = difficulty === d;
+                  const color = DIFF_COLORS[d];
+                  return (
+                    <button key={d} type="button" onClick={() => setDifficulty(d)} style={{
+                      background: active ? color : "none", border: `1px solid ${active ? color : "var(--epi-border)"}`,
+                      color: active ? "#111" : "var(--epi-muted)", fontSize: 13, fontWeight: 600,
+                      padding: "6px 16px", borderRadius: 20, cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                    }}>{d}</button>
+                  );
+                })}
+              </Group>
+            </div>
+
+            <div>
+              <Text size="sm" fw={600} mb={8}>Tags / Langage</Text>
+              <TagInput tags={tags} onChange={setTags} />
+            </div>
+
+            <div>
+              <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+              {subject.files[0] && keepExisting && !pdfFile && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px", marginBottom: 8 }}>
+                  <Group gap="xs">
+                    <IconFileText size={14} color="var(--epi-accent)" />
+                    <Text size="sm" c="dimmed">{subject.files[0]}</Text>
+                  </Group>
+                  <button type="button" onClick={() => setKeepExisting(false)}
+                    style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
+                    <IconX size={14} />
+                  </button>
+                </div>
+              )}
+              {(!keepExisting || !subject.files[0] || pdfFile) && (
+                <div onClick={() => document.getElementById("edit-pdf")?.click()} style={{
+                  border: `2px dashed ${pdfFile ? "var(--epi-beginner)" : "var(--epi-border)"}`,
+                  borderRadius: 10, padding: "20px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s",
+                }}>
+                  {pdfFile ? (
+                    <Group justify="center" gap="xs">
+                      <IconCheck size={16} color="var(--epi-beginner)" />
+                      <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{pdfFile.name}</Text>
+                      <button type="button" onClick={e => { e.stopPropagation(); setPdfFile(null); setKeepExisting(subject.files.length > 0); }}
+                        style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
+                        <IconX size={12} />
+                      </button>
+                    </Group>
+                  ) : (
+                    <Group justify="center" gap="xs">
+                      <IconUpload size={16} color="var(--epi-ghost)" />
+                      <Text size="sm" c="dimmed">Glisse le PDF ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
+                    </Group>
+                  )}
+                </div>
+              )}
+              <input id="edit-pdf" type="file" accept="application/pdf" style={{ display: "none" }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) { setPdfFile(f); setKeepExisting(false); } }} />
+            </div>
+
+            {error && <Text size="sm" style={{ color: "var(--epi-advanced)" }}>{error}</Text>}
+
+            <Group justify="flex-end" gap="sm">
+              <button type="button" onClick={onClose} style={{
+                background: "none", border: "1px solid var(--epi-border)", color: "var(--epi-muted)",
+                fontSize: 13, fontWeight: 600, padding: "8px 18px", borderRadius: 8,
+                cursor: "pointer", fontFamily: "inherit",
+              }}>Annuler</button>
+              <button type="submit" disabled={loading || !name} style={{
+                background: name ? "var(--epi-accent)" : "var(--epi-bg)",
+                border: "1px solid var(--epi-border)", color: name ? "#fff" : "var(--epi-ghost)",
+                fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 8,
+                cursor: name && !loading ? "pointer" : "not-allowed", transition: "0.2s", fontFamily: "inherit",
+              }}>{loading ? "Enregistrement…" : "Enregistrer"}</button>
+            </Group>
+          </Stack>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AdminSubjectsTab({ token }: { token: string }) {
+  const [subjects, setSubjects] = useState<AdminSubject[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [editTarget, setEditTarget] = useState<AdminSubject | null>(null);
+
+  useEffect(() => {
+    fetch(`${API}/admin/subjects`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json() as Promise<{ subjects?: AdminSubject[] }>)
+      .then(d => setSubjects(d.subjects ?? []))
+      .catch(() => setError("Impossible de charger les sujets."))
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const toggle = async (s: AdminSubject) => {
+    const next = !s.visible;
+    setSubjects(prev => prev.map(x => x.id === s.id ? { ...x, visible: next } : x));
+    await fetch(`${API}/admin/subjects/${s.id}/visible`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ visible: next }),
+    });
+  };
+
+  const visible = subjects.filter(s => s.visible).length;
+
+  if (loading) return <Text c="dimmed" ta="center">Chargement…</Text>;
+  if (error) return <Text style={{ color: "var(--epi-advanced)" }}>{error}</Text>;
+
+  return (
+    <>
+      <Stack gap="xl">
+        <Group gap="md">
+          {[
+            { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
+            { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
+            { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{
+              background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
+              borderRadius: 10, padding: "14px 20px", flex: 1, textAlign: "center",
+            }}>
+              <Text fw={800} size="xl" style={{ color }}>{value}</Text>
+              <Text size="xs" c="dimmed">{label}</Text>
+            </div>
+          ))}
+        </Group>
+
+        {subjects.length === 0 ? (
+          <Text c="dimmed" ta="center">Aucun sujet créé pour l'instant.</Text>
+        ) : (
+          <Stack gap="sm">
+            {subjects.map(s => (
+              <div key={s.id} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                background: "var(--epi-surface)",
+                border: `1px solid ${s.visible ? "var(--epi-beginner)" : "var(--epi-border)"}`,
+                borderRadius: 10, padding: "14px 18px", gap: 12, transition: "border-color 0.2s",
+              }}>
+                <Group gap="sm" style={{ minWidth: 0, flex: 1 }}>
+                  <IconBook size={16} color={s.visible ? "var(--epi-beginner)" : "var(--epi-ghost)"} style={{ flexShrink: 0 }} />
+                  <Stack gap={2} style={{ minWidth: 0 }}>
+                    <Text fw={600} size="sm" truncate>{s.name}</Text>
+                    <Group gap={6} wrap="wrap">
+                      <Badge level={s.difficulty as Subject["difficulty"]} />
+                      {s.tags.map((t: string) => (
+                        <span key={t} style={{
+                          background: "var(--epi-bg)", color: "var(--epi-accent)",
+                          fontSize: 11, fontWeight: 600, padding: "2px 7px",
+                          borderRadius: 15, border: "1px solid var(--epi-border)",
+                        }}>{t}</span>
+                      ))}
+                      {s.files[0] && (
+                        <a href={`${API}/uploads/${s.files[0]}`} target="_blank" rel="noopener noreferrer" style={{
+                          display: "flex", alignItems: "center", gap: 4,
+                          color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                          textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                          border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                        }}>
+                          <IconFileText size={11} /> PDF
+                        </a>
+                      )}
+                      {s.url && (
+                        <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                          display: "flex", alignItems: "center", gap: 4,
+                          color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                          textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                          border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                        }}>
+                          <IconLink size={11} /> Lien
+                        </a>
+                      )}
+                    </Group>
+                  </Stack>
+                </Group>
+                <Group gap="xs" style={{ flexShrink: 0 }}>
+                  <button
+                    onClick={() => setEditTarget(s)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      background: "none", border: "1px solid var(--epi-border)",
+                      color: "var(--epi-muted)", fontSize: 12, fontWeight: 700,
+                      padding: "6px 14px", borderRadius: 20,
+                      cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                    }}
+                  >
+                    <IconPencil size={13} /> Modifier
+                  </button>
+                  <button
+                    onClick={() => toggle(s)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      background: s.visible ? "rgba(74,222,128,0.1)" : "none",
+                      border: `1px solid ${s.visible ? "var(--epi-beginner)" : "var(--epi-border)"}`,
+                      color: s.visible ? "var(--epi-beginner)" : "var(--epi-muted)",
+                      fontSize: 12, fontWeight: 700, padding: "6px 14px", borderRadius: 20,
+                      cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                    }}
+                  >
+                    {s.visible ? <><IconEye size={13} /> Visible</> : <><IconEyeOff size={13} /> Masqué</>}
+                  </button>
+                </Group>
+              </div>
+            ))}
+          </Stack>
+        )}
+      </Stack>
+
+      {editTarget && (
+        <EditModal
+          subject={editTarget}
+          token={token}
+          onClose={() => setEditTarget(null)}
+          onSaved={updated => {
+            setSubjects(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+            setEditTarget(null);
+          }}
+        />
+      )}
+    </>
+  );
 }
 
 function SuggestionsTab({ token }: { token: string }) {
@@ -662,7 +991,7 @@ function SuggestionsTab({ token }: { token: string }) {
 }
 
 function AdminApp({ token, onLogout }: { token: string; onLogout: () => void }) {
-  const [tab, setTab] = useState<AdminTab>("suggestions");
+  const [tab, setTab] = useState<AdminTab>("subjects");
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--epi-bg)", display: "flex", flexDirection: "column" }}>
@@ -683,6 +1012,7 @@ function AdminApp({ token, onLogout }: { token: string; onLogout: () => void }) 
 
         <ScrollArea flex={1} style={{ background: "var(--epi-bg)" }}>
           <div style={{ maxWidth: 640, margin: "0 auto", padding: "32px 24px" }}>
+            {tab === "subjects" && <AdminSubjectsTab token={token} />}
             {tab === "suggestions" && <SuggestionsTab token={token} />}
             {tab === "add-subject" && <SubjectForm token={token} />}
           </div>
