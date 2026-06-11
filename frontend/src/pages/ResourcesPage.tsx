@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Stack, Group, Text } from "@mantine/core";
 import {
   IconSearch, IconCalendar, IconMapPin, IconLayoutGrid, IconList,
-  IconBook, IconFile, IconX, IconStar,
+  IconBook, IconFile, IconX,
 } from "@tabler/icons-react";
 import { session } from "../config";
 import type { Subject } from "../config";
@@ -25,27 +25,13 @@ const SORT_OPTIONS = [
 ];
 const DIFF_ORDER: Record<Subject["difficulty"], number> = { Débutant: 0, Intermédiaire: 1, Avancé: 2 };
 
-function loadFavorites(): Set<string> {
-  try {
-    const raw = localStorage.getItem("cc-favorites");
-    if (raw) return new Set(JSON.parse(raw));
-  } catch {}
-  return new Set();
-}
-
-function saveFavorites(favs: Set<string>) {
-  localStorage.setItem("cc-favorites", JSON.stringify([...favs]));
-}
-
 export function ResourcesPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [diffFilter, setDiffFilter] = useState<DiffFilter>("Tous");
-  const [showFavOnly, setShowFavOnly] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>("default");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [favorites, setFavorites] = useState<Set<string>>(loadFavorites);
   const [selected, setSelected] = useState<Subject | null>(null);
 
   useEffect(() => {
@@ -55,21 +41,8 @@ export function ResourcesPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { saveFavorites(favorites); }, [favorites]);
-
-  const toggleFavorite = (e: React.MouseEvent, name: string) => {
-    e.stopPropagation();
-    setFavorites(prev => {
-      const next = new Set(prev);
-      next.has(name) ? next.delete(name) : next.add(name);
-      return next;
-    });
-  };
-
   const filtered = useMemo(() => {
     let list = [...subjects];
-    if (showFavOnly)
-      list = list.filter(s => favorites.has(s.name));
     if (diffFilter !== "Tous")
       list = list.filter(s => s.difficulty === diffFilter);
     if (search) {
@@ -84,15 +57,14 @@ export function ResourcesPage() {
     if (sortMode === "diff-asc") list.sort((a, b) => DIFF_ORDER[a.difficulty] - DIFF_ORDER[b.difficulty]);
     if (sortMode === "diff-desc") list.sort((a, b) => DIFF_ORDER[b.difficulty] - DIFF_ORDER[a.difficulty]);
     return list;
-  }, [subjects, search, diffFilter, showFavOnly, sortMode, favorites]);
+  }, [subjects, search, diffFilter, sortMode]);
 
   const activeFiltersCount = [
-    search, diffFilter !== "Tous", showFavOnly, sortMode !== "default",
+    search, diffFilter !== "Tous", sortMode !== "default",
   ].filter(Boolean).length;
 
   const resetFilters = () => {
-    setSearch(""); setDiffFilter("Tous");
-    setShowFavOnly(false); setSortMode("default");
+    setSearch(""); setDiffFilter("Tous"); setSortMode("default");
   };
 
   const totalFiles = subjects.reduce((acc: number, s: Subject) => acc + s.files.length, 0);
@@ -192,21 +164,6 @@ export function ResourcesPage() {
               </button>
             );
           })}
-          <button
-            onClick={() => setShowFavOnly(v => !v)}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: showFavOnly ? "var(--epi-intermediate)" : "none",
-              border: `1px solid ${showFavOnly ? "var(--epi-intermediate)" : "var(--epi-border)"}`,
-              color: showFavOnly ? "#111" : "var(--epi-muted)",
-              fontSize: 12, fontWeight: 600,
-              padding: "5px 12px", borderRadius: 20,
-              cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
-            }}
-          >
-            <IconStar size={12} fill={showFavOnly ? "currentColor" : "none"} />
-            Favoris
-          </button>
           {activeFiltersCount > 0 && (
             <button
               onClick={resetFilters}
@@ -287,8 +244,6 @@ export function ResourcesPage() {
               <SubjectCard
                 key={s.name}
                 subject={s}
-                isFavorite={favorites.has(s.name)}
-                onToggleFavorite={toggleFavorite}
                 onClick={() => setSelected(s)}
               />
             ))}

@@ -1,16 +1,14 @@
 import { Group, Stack, Text } from "@mantine/core";
-import { IconBook, IconFile, IconLink, IconStar } from "@tabler/icons-react";
+import { IconBook, IconFile, IconLink } from "@tabler/icons-react";
 import { Badge } from "./Badge";
 import type { Subject } from "../../config";
 
 interface SubjectCardProps {
   subject: Subject;
-  isFavorite: boolean;
-  onToggleFavorite: (e: React.MouseEvent, name: string) => void;
   onClick: () => void;
 }
 
-export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: SubjectCardProps) {
+export function SubjectCard({ subject, onClick }: SubjectCardProps) {
   return (
     <div
       onClick={onClick}
@@ -41,26 +39,7 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
           <IconBook size={18} color="var(--epi-accent)" style={{ flexShrink: 0 }} />
           <Text fw={700} size="sm" truncate>{subject.name}</Text>
         </Group>
-        <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
-          <Badge level={subject.difficulty} />
-          <button
-            onClick={e => onToggleFavorite(e, subject.name)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: isFavorite ? "var(--epi-intermediate)" : "var(--epi-border)",
-              fontSize: 14,
-              padding: 0,
-              transition: "color 0.2s, transform 0.2s",
-              display: "flex",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = "var(--epi-intermediate)")}
-            onMouseLeave={e => (e.currentTarget.style.color = isFavorite ? "var(--epi-intermediate)" : "var(--epi-border)")}
-          >
-            <IconStar size={14} fill={isFavorite ? "currentColor" : "none"} />
-          </button>
-        </Group>
+        <Badge level={subject.difficulty} />
       </Group>
 
       {subject.description && (
