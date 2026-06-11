@@ -210,7 +210,7 @@ function SubjectForm({ token }: { token: string }) {
 
   const submit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    if (!name || !pdfFile) return;
+    if (!name) return;
     setLoading(true);
     setError("");
     try {
@@ -219,7 +219,7 @@ function SubjectForm({ token }: { token: string }) {
       fd.append("description", description);
       fd.append("difficulty", difficulty);
       fd.append("tags", tags.join(","));
-      fd.append("file", pdfFile);
+      if (pdfFile) fd.append("file", pdfFile);
 
       const res = await fetch(`${API}/admin/subjects`, {
         method: "POST",
@@ -357,7 +357,7 @@ function SubjectForm({ token }: { token: string }) {
             </div>
 
             <div>
-              <Text size="sm" fw={600} mb={8}>Fichier PDF <span style={{ color: "var(--epi-advanced)" }}>*</span></Text>
+              <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
               <div
                 onClick={() => fileInputRef.current?.click()}
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -409,14 +409,14 @@ function SubjectForm({ token }: { token: string }) {
 
             <button
               type="submit"
-              disabled={loading || !name || !pdfFile}
+              disabled={loading || !name}
               style={{
-                background: name && pdfFile ? "var(--epi-accent)" : "var(--epi-bg)",
+                background: name ? "var(--epi-accent)" : "var(--epi-bg)",
                 border: "1px solid var(--epi-border)",
-                color: name && pdfFile ? "#fff" : "var(--epi-ghost)",
+                color: name ? "#fff" : "var(--epi-ghost)",
                 fontSize: 14, fontWeight: 700,
                 padding: "11px", borderRadius: 8,
-                cursor: name && pdfFile && !loading ? "pointer" : "not-allowed",
+                cursor: name && !loading ? "pointer" : "not-allowed",
                 transition: "0.2s", fontFamily: "inherit", width: "100%",
               }}
             >

@@ -7,19 +7,15 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
   .use(adminAuth)
   .post(
     "/subjects",
-    async ({ body, set }) => {
+    async ({ body }) => {
       const data = body as Record<string, unknown>;
       const file = data["file"];
-      if (!file || !(file instanceof File)) {
-        set.status = 400;
-        return { message: "Un fichier PDF est requis." };
-      }
       const subject = await subjectService.create({
         name: String(data["name"] ?? ""),
         description: String(data["description"] ?? ""),
         difficulty: String(data["difficulty"] ?? ""),
         tags: String(data["tags"] ?? ""),
-        file,
+        file: file instanceof File ? file : undefined,
       });
       return { success: true, subject };
     },

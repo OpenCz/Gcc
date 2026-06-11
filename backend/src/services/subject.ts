@@ -28,18 +28,22 @@ export const subjectService = {
       .map(t => t.trim())
       .filter(Boolean);
 
-    const fileName = data.file.name.replace(/[\\/]/g, "_");
-    if ((data.file.type && data.file.type !== "application/pdf") || !fileName.toLowerCase().endsWith(".pdf"))
-      throw new Error("Only PDF files are allowed");
+    let files: string[] = [];
+    if (data.file) {
+      const fileName = data.file.name.replace(/[\\/]/g, "_");
+      if (!fileName.toLowerCase().endsWith(".pdf"))
+        throw new Error("Only PDF files are allowed");
+      const buffer = Buffer.from(await data.file.arrayBuffer());
+      await writeFile(join(UPLOADS_DIR, fileName), buffer);
+      files = [fileName];
+    }
 
-    const buffer = Buffer.from(await data.file.arrayBuffer());
-    await writeFile(join(UPLOADS_DIR, fileName), buffer);
     return subjectModel.create({
       name: data.name,
       description: data.description,
       difficulty,
       tags,
-      files: [fileName],
+      files,
     });
   },
 
