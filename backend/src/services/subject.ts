@@ -104,6 +104,35 @@ export const subjectService = {
     return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
   },
 
+  update: async (id: number, data: SubjectServiceInput & { existingFiles?: string[] }) => {
+    const difficulty = DIFFICULTY_MAP[data.difficulty];
+    if (!difficulty) throw new Error(`Difficulté invalide: ${data.difficulty}`);
+
+    const tags = data.tags
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    let files = data.existingFiles ?? [];
+    if (data.file) {
+      const fileName = data.file.name.replace(/[\\/]/g, "_");
+      if (!fileName.toLowerCase().endsWith(".pdf"))
+        throw new Error("Only PDF files are allowed");
+      const buffer = Buffer.from(await data.file.arrayBuffer());
+      await writeFile(join(UPLOADS_DIR, fileName), buffer);
+      files = [fileName];
+    }
+
+    return subjectModel.update(id, {
+      name: data.name,
+      description: data.description,
+      difficulty,
+      tags,
+      files,
+      url: data.url ?? null,
+    });
+  },
+
   setVisible: (id: number, visible: boolean) =>
     subjectModel.setVisible(id, visible),
 };

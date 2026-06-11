@@ -43,6 +43,41 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
     const subjects = await subjectService.getProposed();
     return { subjects };
   })
+  .patch("/subjects/:id", async ({ body, params, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    const data = body as Record<string, unknown>;
+    const file = data["file"];
+    const existingFiles = data["existingFiles"] ? String(data["existingFiles"]).split(",").filter(Boolean) : [];
+    const subject = await subjectService.update(id, {
+      name: String(data["name"] ?? ""),
+      description: String(data["description"] ?? ""),
+      difficulty: String(data["difficulty"] ?? ""),
+      tags: String(data["tags"] ?? ""),
+      url: data["url"] ? String(data["url"]) : undefined,
+      file: file instanceof File ? file : undefined,
+      existingFiles,
+    });
+    return { success: true, subject };
+  }, {
+    body: t.Object({
+      name: t.String({ minLength: 1 }),
+      description: t.Optional(t.String()),
+      difficulty: t.Union([t.Literal("Débutant"), t.Literal("Intermédiaire"), t.Literal("Avancé")]),
+      tags: t.Optional(t.String()),
+      url: t.Optional(t.String()),
+      existingFiles: t.Optional(t.String()),
+      file: t.Optional(t.Any()),
+    }),
+  })
+  .patch("/subjects/:id/visible", async ({ params, body, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    await subjectService.setVisible(id, body.visible);
+    return { success: true };
+  }, {
+    body: t.Object({ visible: t.Boolean() }),
+  })
   .post("/subjects/:id/approve", async ({ params, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }

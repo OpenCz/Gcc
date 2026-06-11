@@ -3,6 +3,7 @@ import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconLock, IconLogout, IconUpload, IconX, IconCheck,
   IconPlus, IconBook, IconInbox, IconFileText, IconLink,
+  IconEye, IconEyeOff, IconPencil,
 } from "@tabler/icons-react";
 import epitechLogo from "../assets/img/epitech_logo.png";
 import { Badge } from "../components/ui/Badge";
@@ -11,7 +12,7 @@ import type { Subject } from "../config";
 
 const API = "http://localhost:8080";
 
-type AdminTab = "add-subject" | "suggestions";
+type AdminTab = "subjects" | "add-subject" | "suggestions";
 type Difficulty = "Débutant" | "Intermédiaire" | "Avancé";
 
 const DIFF_COLORS: Record<Difficulty, string> = {
@@ -21,6 +22,7 @@ const DIFF_COLORS: Record<Difficulty, string> = {
 };
 
 const NAV = [
+  { id: "subjects" as AdminTab, label: "Sujets", Icon: IconBook },
   { id: "suggestions" as AdminTab, label: "Suggestions", Icon: IconInbox },
   { id: "add-subject" as AdminTab, label: "Ajouter un sujet", Icon: IconPlus },
 ];
