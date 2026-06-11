@@ -26,6 +26,9 @@ FROM oven/bun:latest AS build
 
 WORKDIR /app
 
+ARG API_URL=http://localhost:8080
+ENV API_URL=${API_URL}
+
 COPY package.json bun.lock* ./
 RUN bun install
 

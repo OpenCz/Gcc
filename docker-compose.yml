@@ -1,6 +1,6 @@
 version: '3.9'
 
-services: #conteneur
+services:
   db:
     container_name: db
     image: postgres:16
@@ -12,7 +12,7 @@ services: #conteneur
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes: #garde les données mm si le conteneur est éteint
+    volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -24,17 +24,26 @@ services: #conteneur
 
   backend:
     container_name: backend
-    build: ./backend #dossier qui contient le Dockerfile
+    build: ./backend
     ports:
       - "8080:8080"
     networks:
       - back-tier
       - front-tier
     environment:
+      - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_SECRET=${ADMIN_SECRET}
       - FRONTEND_URL=${FRONTEND_URL}
-    depends_on: #les services nécessaire pour que le conteneur fonctionne
+      - UPLOADS_DIR=/app/uploads
+      - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID}
+      - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET}
+      - MICROSOFT_REDIRECT_URI=${MICROSOFT_REDIRECT_URI}
+      - MICROSOFT_TENANT_ID=${MICROSOFT_TENANT_ID}
+    volumes:
+      - uploads-data:/app/uploads
+    depends_on:
       db:
         condition: service_healthy
     healthcheck:
@@ -49,18 +58,18 @@ services: #conteneur
     container_name: frontend
     build:
       context: ./frontend
-      target: dev #utilise le stage dev du Dockerfile
+      target: dev
     ports:
-      - "3000:3000"
+      - "3000:6767"
     networks:
       - front-tier
     environment:
-      - BACKEND_URL=${BACKEND_URL}
-    depends_on: #les services nécessaire pour que le conteneur fonctionne
+      - API_URL=${API_URL}
+    depends_on:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:6767 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -68,11 +77,13 @@ services: #conteneur
     restart: on-failure
 
 networks:
-  back-tier: #link db et backend ensemble
+  back-tier:
     name: back-tier
-  front-tier: #link frontend et backend ensemble
+  front-tier:
     name: front-tier
 
 volumes:
   db-data:
     name: db-data
+  uploads-data:
+    name: uploads-data

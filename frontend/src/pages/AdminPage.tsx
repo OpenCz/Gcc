@@ -10,7 +10,7 @@ import { Badge } from "../components/ui/Badge";
 import { TagInput } from "../components/ui/TagInput";
 import type { Subject } from "../config";
 
-const API = "http://localhost:8080";
+import { API } from "../lib/api";
 
 type AdminTab = "subjects" | "add-subject" | "suggestions";
 type Difficulty = "Débutant" | "Intermédiaire" | "Avancé";

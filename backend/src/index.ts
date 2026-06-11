@@ -7,7 +7,12 @@ import { subjectService } from "./services/subject";
 import { basename, join } from "path";
 import { readFile } from "fs/promises";
 
-const UPLOADS_DIR = join(import.meta.dir, "../uploads");
+const UPLOADS_DIR = process.env.UPLOADS_DIR ?? join(import.meta.dir, "../uploads");
+
+if (process.env.NODE_ENV === "production" && !process.env.FRONTEND_URL) {
+  throw new Error("FRONTEND_URL must be set in production");
+}
+
 const app = new Elysia()
   .use(cors({
     origin: process.env.FRONTEND_URL ?? "http://localhost:6767",
@@ -37,6 +42,6 @@ const app = new Elysia()
   .use(adminRoutes)
   .use(authRoutes)
   .use(mantaRoutes)
-  .listen(8080);
+  .listen(parseInt(process.env.PORT ?? "8080"));
 
-console.log(`Backend running on http://localhost:${app.server?.port}`);
+console.log(`Backend running on port ${app.server?.port}`);

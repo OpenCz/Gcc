@@ -10,7 +10,7 @@ import { TagInput } from "../components/ui/TagInput";
 import epitechLogo from "../assets/img/epitech_logo.png";
 import type { Subject } from "../config";
 
-const API = "http://localhost:8080";
+import { API } from "../lib/api";
 
 type Tab = "subjects" | "propose" | "events";
 type Difficulty = "Débutant" | "Intermédiaire" | "Avancé";

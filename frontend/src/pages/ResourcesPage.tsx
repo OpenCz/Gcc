@@ -9,7 +9,7 @@ import type { Subject } from "../config";
 import { SubjectCard } from "../components/ui/SubjectCard";
 import { SubjectDetail } from "../components/ui/SubjectDetail";
 
-const API = "http://localhost:8080";
+import { API } from "../lib/api";
 
 type DiffFilter = "Tous" | Subject["difficulty"];
 type SortMode = "default" | "az" | "za" | "diff-asc" | "diff-desc";

@@ -14,6 +14,9 @@ COPY . .
 # Génère le client Prisma
 RUN bunx prisma generate
 
+# Crée le dossier uploads
+RUN mkdir -p /app/uploads
+
 # Expose le port du serveur Elysia
 EXPOSE 8080
 
