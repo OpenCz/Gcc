@@ -45,6 +45,7 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
       description: String(data["description"] ?? ""),
       difficulty: String(data["difficulty"] ?? ""),
       tags: String(data["tags"] ?? ""),
+      url: data["url"] ? String(data["url"]) : undefined,
       file: file instanceof File ? file : undefined,
     });
     return { success: true, subject };
@@ -54,6 +55,7 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
       description: t.Optional(t.String()),
       difficulty: DIFF_LITERALS,
       tags: t.Optional(t.String()),
+      url: t.Optional(t.String()),
       file: t.Optional(t.Any()),
     }),
   })

@@ -44,6 +44,7 @@ export const subjectService = {
       difficulty,
       tags,
       files,
+      url: data.url,
     });
   },
 
@@ -82,6 +83,7 @@ export const subjectService = {
       difficulty,
       tags,
       files,
+      url: data.url,
       proposed: true,
     });
   },

@@ -15,6 +15,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
         description: String(data["description"] ?? ""),
         difficulty: String(data["difficulty"] ?? ""),
         tags: String(data["tags"] ?? ""),
+        url: data["url"] ? String(data["url"]) : undefined,
         file: file instanceof File ? file : undefined,
       });
       return { success: true, subject };
@@ -29,6 +30,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
           t.Literal("Avancé"),
         ]),
         tags: t.Optional(t.String()),
+        url: t.Optional(t.String()),
         file: t.Optional(t.Any()),
       }),
     }
