@@ -97,7 +97,11 @@ export const subjectService = {
 
   rejectProposal: (id: number, reason: string) => subjectModel.reject(id, reason),
 
-  cancelProposal: (id: number) => subjectModel.deleteById(id),
+  cancelProposal: async (id: number) => {
+    const s = await subjectModel.findById(id);
+    if (!s || !s.proposed || s.rejected) throw new Error("Subject is not a pending proposal");
+    return subjectModel.deleteById(id);
+  },
 
   getRejectedProposals: async () => {
     const rows = await subjectModel.findRejected();
