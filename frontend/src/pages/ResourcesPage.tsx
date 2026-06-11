@@ -279,23 +279,18 @@ export function ResourcesPage() {
       ) : (
         <>
           <div style={{
-            display: "flex",
-            flexWrap: viewMode === "grid" ? "wrap" : "nowrap",
-            flexDirection: viewMode === "list" ? "column" : "row",
+            display: "grid",
+            gridTemplateColumns: viewMode === "grid" ? "repeat(3, 1fr)" : "1fr",
             gap: 20,
           }}>
             {filtered.map(s => (
-              <div
+              <SubjectCard
                 key={s.name}
-                style={{ width: viewMode === "grid" ? "calc(33.333% - 14px)" : "100%", minWidth: 200 }}
-              >
-                <SubjectCard
-                  subject={s}
-                  isFavorite={favorites.has(s.name)}
-                  onToggleFavorite={toggleFavorite}
-                  onClick={() => setSelected(s)}
-                />
-              </div>
+                subject={s}
+                isFavorite={favorites.has(s.name)}
+                onToggleFavorite={toggleFavorite}
+                onClick={() => setSelected(s)}
+              />
             ))}
           </div>
 

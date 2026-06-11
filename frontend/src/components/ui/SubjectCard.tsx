@@ -1,5 +1,5 @@
 import { Group, Stack, Text } from "@mantine/core";
-import { IconBook, IconFile, IconInfoCircle, IconStar } from "@tabler/icons-react";
+import { IconBook, IconFile, IconLink, IconStar } from "@tabler/icons-react";
 import { Badge } from "./Badge";
 import type { Subject } from "../../config";
 
@@ -23,6 +23,8 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
         display: "flex",
         flexDirection: "column",
         gap: 10,
+        height: "100%",
+        boxSizing: "border-box",
         transition: "border-color 0.2s, background 0.2s, transform 0.2s",
       }}
       onMouseEnter={e => {
@@ -61,6 +63,18 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
         </Group>
       </Group>
 
+      {subject.description && (
+        <Text size="xs" c="dimmed" style={{
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          lineHeight: 1.55,
+        }}>
+          {subject.description}
+        </Text>
+      )}
+
       <Stack gap={6}>
         <Group gap={6} wrap="wrap">
           {subject.tags.map(tag => (
@@ -80,16 +94,25 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
       </Stack>
 
       <Group justify="space-between">
-        <Group gap={6}>
-          <IconFile size={12} color="var(--epi-accent)" />
-          <Text size="xs" c="dimmed">
-            {subject.files.length} fichier{subject.files.length > 1 ? "s" : ""}
-          </Text>
+        <Group gap={8}>
+          {subject.files.length > 0 && (
+            <Group gap={5}>
+              <IconFile size={12} color="var(--epi-ghost)" />
+              <Text size="xs" c="dimmed">
+                {subject.files.length} fichier{subject.files.length > 1 ? "s" : ""}
+              </Text>
+            </Group>
+          )}
+          {subject.url && (
+            <Group gap={5}>
+              <IconLink size={12} color="var(--epi-ghost)" />
+              <Text size="xs" c="dimmed">Lien</Text>
+            </Group>
+          )}
         </Group>
-        <Group gap={4}>
-          <IconInfoCircle size={11} color="var(--epi-ghost)" />
-          <Text size="xs" style={{ color: "var(--epi-ghost)" }}>Cliquer pour voir les détails</Text>
-        </Group>
+        <Text size="xs" style={{ color: "var(--epi-ghost)", fontStyle: "italic" }}>
+          Voir les détails →
+        </Text>
       </Group>
     </div>
   );
