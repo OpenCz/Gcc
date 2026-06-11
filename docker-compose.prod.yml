@@ -1,0 +1,108 @@
+# Environnement de production (OVH)
+# Usage : docker compose -f docker-compose.prod.yml up -d --build
+#
+# Prérequis :
+#   - Fichier .env à la racine avec toutes les variables (voir .env.example)
+#   - Reverse proxy (nginx/Traefik) sur le serveur pour le SSL/TLS
+#
+# Ports exposés :
+#   - 80  → frontend (nginx, HTML statique)
+#   - 8080 → backend (API Elysia) — à masquer derrière le reverse proxy
+#
+# La DB n'est PAS exposée hors du réseau Docker (sécurité).
+
+services:
+  db:
+    image: postgres:16
+    container_name: gcc-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db-prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - back-tier
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  backend:
+    build: ./backend
+    container_name: gcc-backend
+    command: sh -c "bunx prisma migrate deploy && bun src/index.ts"
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_SECRET: ${ADMIN_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      UPLOADS_DIR: /app/uploads
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET}
+      MICROSOFT_REDIRECT_URI: ${MICROSOFT_REDIRECT_URI}
+      MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID}
+    volumes:
+      - uploads-prod:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - back-tier
+      - front-tier
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+      args:
+        API_URL: ${API_URL}
+    container_name: gcc-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - front-tier
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+networks:
+  back-tier:
+    name: gcc-back-prod
+  front-tier:
+    name: gcc-front-prod
+
+volumes:
+  db-prod:
+    name: gcc-db-prod
+  uploads-prod:
+    name: gcc-uploads-prod
