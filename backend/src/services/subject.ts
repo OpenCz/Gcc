@@ -1,6 +1,6 @@
 import type { Difficulty } from "@prisma/client";
 import { subjectModel } from "../models/subject";
-import type { SubjectServiceInput } from "../types/subject";
+import type { SubjectServiceInput, SubjectProposeInput } from "../types/subject";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
@@ -28,18 +28,23 @@ export const subjectService = {
       .map(t => t.trim())
       .filter(Boolean);
 
-    const fileName = data.file.name.replace(/[\\/]/g, "_");
-    if ((data.file.type && data.file.type !== "application/pdf") || !fileName.toLowerCase().endsWith(".pdf"))
-      throw new Error("Only PDF files are allowed");
+    let files: string[] = [];
+    if (data.file) {
+      const fileName = data.file.name.replace(/[\\/]/g, "_");
+      if (!fileName.toLowerCase().endsWith(".pdf"))
+        throw new Error("Only PDF files are allowed");
+      const buffer = Buffer.from(await data.file.arrayBuffer());
+      await writeFile(join(UPLOADS_DIR, fileName), buffer);
+      files = [fileName];
+    }
 
-    const buffer = Buffer.from(await data.file.arrayBuffer());
-    await writeFile(join(UPLOADS_DIR, fileName), buffer);
     return subjectModel.create({
       name: data.name,
       description: data.description,
       difficulty,
       tags,
-      files: [fileName],
+      files,
+      url: data.url,
     });
   },
 
@@ -51,6 +56,85 @@ export const subjectService = {
   getAll: async () => {
     const rows = await subjectModel.findAll();
     return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
+
+  propose: async (data: SubjectProposeInput) => {
+    const difficulty = DIFFICULTY_MAP[data.difficulty];
+    if (!difficulty) throw new Error(`Difficulté invalide: ${data.difficulty}`);
+
+    const tags = (data.tags ?? "")
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    let files: string[] = [];
+    if (data.file) {
+      const fileName = data.file.name.replace(/[\\/]/g, "_");
+      if (!fileName.toLowerCase().endsWith(".pdf"))
+        throw new Error("Only PDF files are allowed");
+      const buffer = Buffer.from(await data.file.arrayBuffer());
+      await writeFile(join(UPLOADS_DIR, fileName), buffer);
+      files = [fileName];
+    }
+
+    return subjectModel.create({
+      name: data.name,
+      description: data.description ?? "",
+      difficulty,
+      tags,
+      files,
+      url: data.url,
+      proposed: true,
+    });
+  },
+
+  getProposed: async () => {
+    const rows = await subjectModel.findProposed();
+    return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
+
+  approveProposal: (id: number) => subjectModel.approve(id),
+
+  rejectProposal: (id: number, reason: string) => subjectModel.reject(id, reason),
+
+  cancelProposal: async (id: number) => {
+    const s = await subjectModel.findById(id);
+    if (!s || !s.proposed || s.rejected) throw new Error("Subject is not a pending proposal");
+    return subjectModel.deleteById(id);
+  },
+
+  getRejectedProposals: async () => {
+    const rows = await subjectModel.findRejected();
+    return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
+
+  update: async (id: number, data: SubjectServiceInput & { existingFiles?: string[] }) => {
+    const difficulty = DIFFICULTY_MAP[data.difficulty];
+    if (!difficulty) throw new Error(`Difficulté invalide: ${data.difficulty}`);
+
+    const tags = data.tags
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean);
+
+    let files = data.existingFiles ?? [];
+    if (data.file) {
+      const fileName = data.file.name.replace(/[\\/]/g, "_");
+      if (!fileName.toLowerCase().endsWith(".pdf"))
+        throw new Error("Only PDF files are allowed");
+      const buffer = Buffer.from(await data.file.arrayBuffer());
+      await writeFile(join(UPLOADS_DIR, fileName), buffer);
+      files = [fileName];
+    }
+
+    return subjectModel.update(id, {
+      name: data.name,
+      description: data.description,
+      difficulty,
+      tags,
+      files,
+      url: data.url ?? null,
+    });
   },
 
   setVisible: (id: number, visible: boolean) =>

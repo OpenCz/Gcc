@@ -114,6 +114,35 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
                 <Text size="sm" fw={700}>Ressources</Text>
               </Group>
 
+              {subject.url && (
+                <div style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  background: "var(--epi-surface)",
+                  border: "1px solid var(--epi-border)",
+                  borderRadius: 8, padding: "12px 14px", gap: 10,
+                }}>
+                  <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
+                    <IconLink size={16} color="var(--epi-accent)" style={{ flexShrink: 0 }} />
+                    <Text size="sm" truncate style={{ color: "var(--epi-muted)" }}>{subject.url}</Text>
+                  </Group>
+                  <a
+                    href={subject.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      color: "var(--epi-accent)", border: "1px solid var(--epi-accent)",
+                      background: "transparent", borderRadius: 6,
+                      fontSize: 12, fontWeight: 700, flexShrink: 0,
+                      padding: "6px 12px", textDecoration: "none", transition: "0.2s",
+                    }}
+                  >
+                    <IconEye size={12} />
+                    Ouvrir
+                  </a>
+                </div>
+              )}
+
               {subject.files.map(file => (
                 <div
                   key={file}
