@@ -4,6 +4,7 @@ export interface Subject {
   files: string[];
   difficulty: "Débutant" | "Intermédiaire" | "Avancé";
   tags: string[];
+  url?: string;
   isNew?: boolean;
 }
 

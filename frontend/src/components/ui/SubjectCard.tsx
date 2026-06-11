@@ -38,21 +38,6 @@ export function SubjectCard({ subject, isFavorite, onToggleFavorite, onClick }: 
         <Group gap="xs" wrap="nowrap" style={{ minWidth: 0 }}>
           <IconBook size={18} color="var(--epi-accent)" style={{ flexShrink: 0 }} />
           <Text fw={700} size="sm" truncate>{subject.name}</Text>
-          {subject.isNew && (
-            <span style={{
-              background: "var(--epi-accent)",
-              color: "#fff",
-              fontSize: 9,
-              fontWeight: 800,
-              padding: "2px 6px",
-              borderRadius: 4,
-              letterSpacing: 1,
-              flexShrink: 0,
-              animation: "pulse 2s infinite",
-            }}>
-              NEW
-            </span>
-          )}
         </Group>
         <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
           <Badge level={subject.difficulty} />

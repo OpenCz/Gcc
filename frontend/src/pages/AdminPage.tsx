@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconLock, IconLogout, IconUpload, IconX, IconCheck,
-  IconPlus, IconBook, IconInbox, IconFileText,
+  IconPlus, IconBook, IconInbox, IconFileText, IconLink,
 } from "@tabler/icons-react";
 import epitechLogo from "../assets/img/epitech_logo.png";
 import { Badge } from "../components/ui/Badge";
@@ -190,6 +190,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }) {
 function SubjectForm({ token }: { token: string }) {
   const [name, setName] = useState("");
   const [description, setDesc] = useState("");
+  const [url, setUrl] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
   const [tags, setTags] = useState<string[]>([]);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -204,7 +205,7 @@ function SubjectForm({ token }: { token: string }) {
   };
 
   const reset = () => {
-    setName(""); setDesc(""); setDifficulty("Débutant");
+    setName(""); setDesc(""); setUrl(""); setDifficulty("Débutant");
     setTags([]); setPdfFile(null); setSuccess(false); setError("");
   };
 
@@ -219,6 +220,7 @@ function SubjectForm({ token }: { token: string }) {
       fd.append("description", description);
       fd.append("difficulty", difficulty);
       fd.append("tags", tags.join(","));
+      if (url.trim()) fd.append("url", url.trim());
       if (pdfFile) fd.append("file", pdfFile);
 
       const res = await fetch(`${API}/admin/subjects`, {
@@ -321,6 +323,27 @@ function SubjectForm({ token }: { token: string }) {
                   boxSizing: "border-box",
                 }}
               />
+            </div>
+
+            <div>
+              <Text size="sm" fw={600} mb={8}>Lien <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                background: "var(--epi-bg)",
+                border: "1px solid var(--epi-border)",
+                borderRadius: 8, padding: "10px 14px",
+              }}>
+                <IconLink size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                <input
+                  value={url}
+                  onChange={e => setUrl(e.target.value)}
+                  placeholder="https://…"
+                  style={{
+                    flex: 1, background: "none", border: "none", outline: "none",
+                    color: "#fff", fontSize: 14, fontFamily: "inherit",
+                  }}
+                />
+              </div>
             </div>
 
             <div>
@@ -519,6 +542,16 @@ function SuggestionsTab({ token }: { token: string }) {
                   border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
                 }}>
                   <IconFileText size={11} /> PDF
+                </a>
+              )}
+              {s.url && (
+                <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                  textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                  border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                }}>
+                  <IconLink size={11} /> Lien
                 </a>
               )}
             </Stack>

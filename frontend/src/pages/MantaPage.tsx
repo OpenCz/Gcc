@@ -3,7 +3,7 @@ import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconEye, IconEyeOff, IconLogout, IconBook,
   IconCalendarEvent, IconPlus, IconCheck, IconUpload,
-  IconX, IconMapPin, IconUsers, IconFileText,
+  IconX, IconMapPin, IconUsers, IconFileText, IconLink,
 } from "@tabler/icons-react";
 import { Badge } from "../components/ui/Badge";
 import { TagInput } from "../components/ui/TagInput";
@@ -186,6 +186,16 @@ function SubjectsTab({ token }: { token: string }) {
                         <IconFileText size={11} /> PDF
                       </a>
                     )}
+                    {s.url && (
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                        display: "flex", alignItems: "center", gap: 4,
+                        color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                        textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                        border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                      }}>
+                        <IconLink size={11} /> Lien
+                      </a>
+                    )}
                   </Group>
                 </Stack>
               </Group>
@@ -214,6 +224,7 @@ function SubjectsTab({ token }: { token: string }) {
 function ProposeTab() {
   const [name, setName] = useState("");
   const [description, setDesc] = useState("");
+  const [url, setUrl] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
   const [tags, setTags] = useState<string[]>([]);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
@@ -246,7 +257,7 @@ function ProposeTab() {
   useEffect(() => { loadProposals(); }, []);
 
   const reset = () => {
-    setName(""); setDesc(""); setDifficulty("Débutant");
+    setName(""); setDesc(""); setUrl(""); setDifficulty("Débutant");
     setTags([]); setPdfFile(null); setSuccess(false); setError("");
   };
 
@@ -260,6 +271,7 @@ function ProposeTab() {
       fd.append("description", description);
       fd.append("difficulty", difficulty);
       fd.append("tags", tags.join(","));
+      if (url.trim()) fd.append("url", url.trim());
       if (pdfFile) fd.append("file", pdfFile);
       const res = await fetch(`${API}/manta/subjects/propose`, {
         method: "POST",
@@ -344,6 +356,23 @@ function ProposeTab() {
                       boxSizing: "border-box",
                     }}
                   />
+                </div>
+
+                <div>
+                  <Text size="sm" fw={600} mb={8}>Lien <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+                  <div style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
+                    borderRadius: 8, padding: "10px 14px",
+                  }}>
+                    <IconLink size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                    <input
+                      value={url}
+                      onChange={e => setUrl(e.target.value)}
+                      placeholder="https://…"
+                      style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -465,6 +494,16 @@ function ProposeTab() {
                       <IconFileText size={11} /> PDF
                     </a>
                   )}
+                  {s.url && (
+                    <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
+                      textDecoration: "none", background: "rgba(128,157,253,0.08)",
+                      border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                    }}>
+                      <IconLink size={11} /> Lien
+                    </a>
+                  )}
                 </Group>
                 <button
                   onClick={() => cancelProposal(s.id)}
@@ -507,6 +546,16 @@ function ProposeTab() {
                       border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
                     }}>
                       <IconFileText size={11} /> PDF
+                    </a>
+                  )}
+                  {s.url && (
+                    <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                      display: "flex", alignItems: "center", gap: 4,
+                      color: "var(--epi-muted)", fontSize: 11, fontWeight: 600,
+                      textDecoration: "none", background: "none",
+                      border: "1px solid var(--epi-border)", padding: "2px 8px", borderRadius: 15,
+                    }}>
+                      <IconLink size={11} /> Lien
                     </a>
                   )}
                 </Group>
