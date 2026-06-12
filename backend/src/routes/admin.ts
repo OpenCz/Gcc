@@ -16,7 +16,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
         description: String(data["description"] ?? ""),
         difficulty: String(data["difficulty"] ?? ""),
         tags: String(data["tags"] ?? ""),
-        url: data["url"] ? String(data["url"]) : undefined,
+        urls: data["urls"] ? String(data["urls"]) : undefined,
         file: file instanceof File ? file : undefined,
       });
       return { success: true, subject };
@@ -31,7 +31,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
           t.Literal("Avancé"),
         ]),
         tags: t.Optional(t.String()),
-        url: t.Optional(t.String()),
+        urls: t.Optional(t.String()),
         file: t.Optional(t.Any()),
       }),
     }
@@ -55,7 +55,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
       description: String(data["description"] ?? ""),
       difficulty: String(data["difficulty"] ?? ""),
       tags: String(data["tags"] ?? ""),
-      url: data["url"] ? String(data["url"]) : undefined,
+      urls: data["urls"] ? String(data["urls"]) : undefined,
       file: file instanceof File ? file : undefined,
       existingFiles,
     });
@@ -66,7 +66,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
       description: t.Optional(t.String()),
       difficulty: t.Union([t.Literal("Débutant"), t.Literal("Intermédiaire"), t.Literal("Avancé")]),
       tags: t.Optional(t.String()),
-      url: t.Optional(t.String()),
+      urls: t.Optional(t.String()),
       existingFiles: t.Optional(t.String()),
       file: t.Optional(t.Any()),
     }),

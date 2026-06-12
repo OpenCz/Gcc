@@ -114,8 +114,8 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
                 <Text size="sm" fw={700}>Ressources</Text>
               </Group>
 
-              {subject.url && (
-                <div style={{
+              {(subject.urls ?? []).map(url => (
+                <div key={url} style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   background: "var(--epi-surface)",
                   border: "1px solid var(--epi-border)",
@@ -123,10 +123,10 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
                 }}>
                   <Group gap="xs" style={{ minWidth: 0, flex: 1 }}>
                     <IconLink size={16} color="var(--epi-accent)" style={{ flexShrink: 0 }} />
-                    <Text size="sm" truncate style={{ color: "var(--epi-muted)" }}>{subject.url}</Text>
+                    <Text size="sm" truncate style={{ color: "var(--epi-muted)" }}>{url}</Text>
                   </Group>
                   <a
-                    href={subject.url}
+                    href={url}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -141,7 +141,7 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
                     Ouvrir
                   </a>
                 </div>
-              )}
+              ))}
 
               {subject.files.map(file => (
                 <div

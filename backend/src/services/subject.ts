@@ -38,13 +38,15 @@ export const subjectService = {
       files = [fileName];
     }
 
+    const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
+
     return subjectModel.create({
       name: data.name,
       description: data.description,
       difficulty,
       tags,
       files,
-      url: data.url,
+      urls,
     });
   },
 
@@ -77,13 +79,15 @@ export const subjectService = {
       files = [fileName];
     }
 
+    const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
+
     return subjectModel.create({
       name: data.name,
       description: data.description ?? "",
       difficulty,
       tags,
       files,
-      url: data.url,
+      urls,
       proposed: true,
     });
   },
@@ -127,13 +131,15 @@ export const subjectService = {
       files = [fileName];
     }
 
+    const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
+
     return subjectModel.update(id, {
       name: data.name,
       description: data.description,
       difficulty,
       tags,
       files,
-      url: data.url ?? null,
+      urls,
     });
   },
 
