@@ -18,34 +18,29 @@ const DIFFICULTY_LABEL: Record<Difficulty, string> = {
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? join(import.meta.dir, "../../uploads");
 
+async function savePdfs(files: File[]): Promise<string[]> {
+  const saved: string[] = [];
+  for (const f of files) {
+    const fileName = f.name.replace(/[\\/]/g, "_");
+    if (!fileName.toLowerCase().endsWith(".pdf"))
+      throw new Error("Only PDF files are allowed");
+    const buffer = Buffer.from(await f.arrayBuffer());
+    await writeFile(join(UPLOADS_DIR, fileName), buffer);
+    saved.push(fileName);
+  }
+  return saved;
+}
+
 export const subjectService = {
   create: async (data: SubjectServiceInput) => {
     const difficulty = DIFFICULTY_MAP[data.difficulty];
     if (!difficulty) throw new Error(`Difficulté invalide: ${data.difficulty}`);
 
-    const tags = data.tags
-      .split(",")
-      .map(t => t.trim())
-      .filter(Boolean);
+    const tags = data.tags.split(",").map(t => t.trim()).filter(Boolean);
+    const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
+    const files = await savePdfs(data.newFiles ?? []);
 
-    let files: string[] = [];
-    if (data.file) {
-      const fileName = data.file.name.replace(/[\\/]/g, "_");
-      if (!fileName.toLowerCase().endsWith(".pdf"))
-        throw new Error("Only PDF files are allowed");
-      const buffer = Buffer.from(await data.file.arrayBuffer());
-      await writeFile(join(UPLOADS_DIR, fileName), buffer);
-      files = [fileName];
-    }
-
-    return subjectModel.create({
-      name: data.name,
-      description: data.description,
-      difficulty,
-      tags,
-      files,
-      url: data.url,
-    });
+    return subjectModel.create({ name: data.name, description: data.description, difficulty, tags, files, urls });
   },
 
   getVisible: async () => {
@@ -62,29 +57,14 @@ export const subjectService = {
     const difficulty = DIFFICULTY_MAP[data.difficulty];
     if (!difficulty) throw new Error(`Difficulté invalide: ${data.difficulty}`);
 
-    const tags = (data.tags ?? "")
-      .split(",")
-      .map(t => t.trim())
-      .filter(Boolean);
-
-    let files: string[] = [];
-    if (data.file) {
-      const fileName = data.file.name.replace(/[\\/]/g, "_");
-      if (!fileName.toLowerCase().endsWith(".pdf"))
-        throw new Error("Only PDF files are allowed");
-      const buffer = Buffer.from(await data.file.arrayBuffer());
-      await writeFile(join(UPLOADS_DIR, fileName), buffer);
-      files = [fileName];
-    }
+    const tags = (data.tags ?? "").split(",").map(t => t.trim()).filter(Boolean);
+    const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
+    const files = await savePdfs(data.newFiles ?? []);
 
     return subjectModel.create({
       name: data.name,
       description: data.description ?? "",
-      difficulty,
-      tags,
-      files,
-      url: data.url,
-      proposed: true,
+      difficulty, tags, files, urls, proposed: true,
     });
   },
 
@@ -112,29 +92,12 @@ export const subjectService = {
     const difficulty = DIFFICULTY_MAP[data.difficulty];
     if (!difficulty) throw new Error(`Difficulté invalide: ${data.difficulty}`);
 
-    const tags = data.tags
-      .split(",")
-      .map(t => t.trim())
-      .filter(Boolean);
+    const tags = data.tags.split(",").map(t => t.trim()).filter(Boolean);
+    const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
+    const newFileNames = await savePdfs(data.newFiles ?? []);
+    const files = [...(data.existingFiles ?? []), ...newFileNames];
 
-    let files = data.existingFiles ?? [];
-    if (data.file) {
-      const fileName = data.file.name.replace(/[\\/]/g, "_");
-      if (!fileName.toLowerCase().endsWith(".pdf"))
-        throw new Error("Only PDF files are allowed");
-      const buffer = Buffer.from(await data.file.arrayBuffer());
-      await writeFile(join(UPLOADS_DIR, fileName), buffer);
-      files = [fileName];
-    }
-
-    return subjectModel.update(id, {
-      name: data.name,
-      description: data.description,
-      difficulty,
-      tags,
-      files,
-      url: data.url ?? null,
-    });
+    return subjectModel.update(id, { name: data.name, description: data.description, difficulty, tags, files, urls });
   },
 
   setVisible: (id: number, visible: boolean) =>

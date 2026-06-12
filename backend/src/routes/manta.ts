@@ -39,14 +39,15 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
   })
   .post("/subjects/propose", async ({ body }) => {
     const data = body as Record<string, unknown>;
-    const file = data["file"];
+    const raw = data["file"];
+    const newFiles = Array.isArray(raw) ? raw.filter((f): f is File => f instanceof File) : raw instanceof File ? [raw] : [];
     const subject = await subjectService.propose({
       name: String(data["name"] ?? ""),
       description: String(data["description"] ?? ""),
       difficulty: String(data["difficulty"] ?? ""),
       tags: String(data["tags"] ?? ""),
-      url: data["url"] ? String(data["url"]) : undefined,
-      file: file instanceof File ? file : undefined,
+      urls: data["urls"] ? String(data["urls"]) : undefined,
+      newFiles,
     });
     return { success: true, subject };
   }, {
@@ -55,7 +56,7 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
       description: t.Optional(t.String()),
       difficulty: DIFF_LITERALS,
       tags: t.Optional(t.String()),
-      url: t.Optional(t.String()),
+      urls: t.Optional(t.String()),
       file: t.Optional(t.Any()),
     }),
   })

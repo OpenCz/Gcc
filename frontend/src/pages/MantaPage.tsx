@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconEye, IconEyeOff, IconLogout, IconBook,
@@ -186,8 +186,8 @@ function SubjectsTab({ token }: { token: string }) {
                         <IconFileText size={11} /> PDF
                       </a>
                     )}
-                    {s.url && (
-                      <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                    {s.urls?.map(u => (
+                      <a key={u} href={u} target="_blank" rel="noopener noreferrer" style={{
                         display: "flex", alignItems: "center", gap: 4,
                         color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
                         textDecoration: "none", background: "rgba(128,157,253,0.08)",
@@ -195,7 +195,7 @@ function SubjectsTab({ token }: { token: string }) {
                       }}>
                         <IconLink size={11} /> Lien
                       </a>
-                    )}
+                    ))}
                   </Group>
                 </Stack>
               </Group>
@@ -224,11 +224,18 @@ function SubjectsTab({ token }: { token: string }) {
 function ProposeTab() {
   const [name, setName] = useState("");
   const [description, setDesc] = useState("");
-  const [url, setUrl] = useState("");
+  const [urls, setUrls] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
   const [tags, setTags] = useState<string[]>([]);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const proposeFileRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const pdfs = Array.from(list).filter(f => f.type === "application/pdf");
+    setPdfFiles(prev => [...prev, ...pdfs]);
+  };
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -257,8 +264,8 @@ function ProposeTab() {
   useEffect(() => { loadProposals(); }, []);
 
   const reset = () => {
-    setName(""); setDesc(""); setUrl(""); setDifficulty("Débutant");
-    setTags([]); setPdfFile(null); setSuccess(false); setError("");
+    setName(""); setDesc(""); setUrls([]); setDifficulty("Débutant");
+    setTags([]); setPdfFiles([]); setSuccess(false); setError("");
   };
 
   const submit = async (e: { preventDefault: () => void }) => {
@@ -271,8 +278,9 @@ function ProposeTab() {
       fd.append("description", description);
       fd.append("difficulty", difficulty);
       fd.append("tags", tags.join(","));
-      if (url.trim()) fd.append("url", url.trim());
-      if (pdfFile) fd.append("file", pdfFile);
+      const validUrls = urls.map(u => u.trim()).filter(Boolean);
+      if (validUrls.length > 0) fd.append("urls", validUrls.join("\n"));
+      for (const f of pdfFiles) fd.append("file", f);
       const res = await fetch(`${API}/manta/subjects/propose`, {
         method: "POST",
         credentials: "include",
@@ -359,20 +367,39 @@ function ProposeTab() {
                 </div>
 
                 <div>
-                  <Text size="sm" fw={600} mb={8}>Lien <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
-                  <div style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
-                    borderRadius: 8, padding: "10px 14px",
-                  }}>
-                    <IconLink size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
-                    <input
-                      value={url}
-                      onChange={e => setUrl(e.target.value)}
-                      placeholder="https://…"
-                      style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
-                    />
-                  </div>
+                  <Text size="sm" fw={600} mb={8}>Liens <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+                  <Stack gap={8}>
+                    {urls.map((u, i) => (
+                      <div key={i} style={{ display: "flex", gap: 8 }}>
+                        <div style={{
+                          display: "flex", alignItems: "center", gap: 10, flex: 1,
+                          background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
+                          borderRadius: 8, padding: "10px 14px",
+                        }}>
+                          <IconLink size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                          <input
+                            value={u}
+                            onChange={e => { const next = [...urls]; next[i] = e.target.value; setUrls(next); }}
+                            placeholder="https://…"
+                            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+                          />
+                        </div>
+                        <button type="button" onClick={() => setUrls(urls.filter((_, j) => j !== i))}
+                          style={{ background: "none", border: "1px solid var(--epi-border)", color: "var(--epi-ghost)", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", padding: "0 10px" }}>
+                          <IconX size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={() => setUrls([...urls, ""])}
+                      style={{
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        background: "none", border: "1px dashed var(--epi-border)",
+                        color: "var(--epi-muted)", fontSize: 13, fontWeight: 600,
+                        padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", width: "100%",
+                      }}>
+                      <IconPlus size={14} /> Ajouter un lien
+                    </button>
+                  </Stack>
                 </div>
 
                 <div>
@@ -403,41 +430,39 @@ function ProposeTab() {
                 </div>
 
                 <div>
-                  <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
-                  <div
-                    onClick={() => document.getElementById("propose-file")?.click()}
-                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={e => {
-                      e.preventDefault(); setDragOver(false);
-                      const f = e.dataTransfer.files[0];
-                      if (f?.type === "application/pdf") setPdfFile(f);
-                    }}
-                    style={{
-                      border: `2px dashed ${dragOver ? "var(--epi-accent)" : pdfFile ? "var(--epi-beginner)" : "var(--epi-border)"}`,
-                      borderRadius: 10, padding: "24px 20px",
-                      textAlign: "center", cursor: "pointer", transition: "border-color 0.2s",
-                      background: dragOver ? "rgba(128,157,253,0.05)" : "none",
-                    }}
-                  >
-                    {pdfFile ? (
-                      <Group justify="center" gap="xs">
-                        <IconCheck size={16} color="var(--epi-beginner)" />
-                        <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{pdfFile.name}</Text>
-                        <button type="button" onClick={e => { e.stopPropagation(); setPdfFile(null); }}
+                  <Text size="sm" fw={600} mb={8}>Fichiers PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+                  <Stack gap={8}>
+                    {pdfFiles.map((f, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-beginner)", borderRadius: 8, padding: "10px 14px" }}>
+                        <Group gap="xs">
+                          <IconCheck size={14} color="var(--epi-beginner)" />
+                          <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{f.name}</Text>
+                        </Group>
+                        <button type="button" onClick={() => setPdfFiles(pdfFiles.filter((_, j) => j !== i))}
                           style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
                           <IconX size={12} />
                         </button>
-                      </Group>
-                    ) : (
+                      </div>
+                    ))}
+                    <div
+                      onClick={() => proposeFileRef.current?.click()}
+                      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={e => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
+                      style={{
+                        border: `2px dashed ${dragOver ? "var(--epi-accent)" : "var(--epi-border)"}`,
+                        borderRadius: 10, padding: "24px 20px", textAlign: "center", cursor: "pointer",
+                        transition: "border-color 0.2s", background: dragOver ? "rgba(128,157,253,0.05)" : "none",
+                      }}
+                    >
                       <Group justify="center" gap="xs">
                         <IconUpload size={16} color="var(--epi-ghost)" />
-                        <Text size="sm" c="dimmed">Glisse le PDF ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
+                        <Text size="sm" c="dimmed">Glisse des PDFs ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
                       </Group>
-                    )}
-                  </div>
-                  <input id="propose-file" type="file" accept="application/pdf" style={{ display: "none" }}
-                    onChange={e => { const f = e.target.files?.[0]; if (f) setPdfFile(f); }} />
+                    </div>
+                    <input ref={proposeFileRef} type="file" accept="application/pdf" multiple style={{ display: "none" }}
+                      onChange={e => { addFiles(e.target.files); if (proposeFileRef.current) proposeFileRef.current.value = ""; }} />
+                  </Stack>
                 </div>
 
                 {error && <Text size="sm" style={{ color: "var(--epi-advanced)" }}>{error}</Text>}
@@ -494,8 +519,8 @@ function ProposeTab() {
                       <IconFileText size={11} /> PDF
                     </a>
                   )}
-                  {s.url && (
-                    <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                  {s.urls?.map(u => (
+                    <a key={u} href={u} target="_blank" rel="noopener noreferrer" style={{
                       display: "flex", alignItems: "center", gap: 4,
                       color: "var(--epi-accent)", fontSize: 11, fontWeight: 600,
                       textDecoration: "none", background: "rgba(128,157,253,0.08)",
@@ -503,7 +528,7 @@ function ProposeTab() {
                     }}>
                       <IconLink size={11} /> Lien
                     </a>
-                  )}
+                  ))}
                 </Group>
                 <button
                   onClick={() => cancelProposal(s.id)}
@@ -548,8 +573,8 @@ function ProposeTab() {
                       <IconFileText size={11} /> PDF
                     </a>
                   )}
-                  {s.url && (
-                    <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                  {s.urls?.map(u => (
+                    <a key={u} href={u} target="_blank" rel="noopener noreferrer" style={{
                       display: "flex", alignItems: "center", gap: 4,
                       color: "var(--epi-muted)", fontSize: 11, fontWeight: 600,
                       textDecoration: "none", background: "none",
@@ -557,7 +582,7 @@ function ProposeTab() {
                     }}>
                       <IconLink size={11} /> Lien
                     </a>
-                  )}
+                  ))}
                 </Group>
                 {s.rejectionReason && (
                   <div style={{
