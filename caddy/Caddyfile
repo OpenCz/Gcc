@@ -16,7 +16,7 @@
 {$DOMAIN} {
 	encode gzip zstd
 
-	@api path /auth/* /admin/* /manta/* /prospect/* /uploads/*
+	@api path /auth/* /admin/* /manta/* /prospect/* /uploads/* /subjects /subjects/*
 	reverse_proxy @api backend:8080
 
 	reverse_proxy frontend:80
