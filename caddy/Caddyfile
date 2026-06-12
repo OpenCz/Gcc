@@ -1,23 +1,23 @@
 # Reverse proxy + HTTPS automatique (Let's Encrypt)
-# Les valeurs {$DOMAIN} et {$ACME_EMAIL} viennent du fichier .env (passees au conteneur Caddy).
+# DuckDNS ne supporte pas les sous-sous-domaines (api.codingclub.duckdns.org).
+# Frontend et API partagent le meme domaine, routes par chemin.
 #
-# - https://DOMAIN        -> frontend (SPA React servie par nginx)
-# - https://api.DOMAIN    -> backend (API Elysia)
-#
-# Caddy obtient et renouvelle les certificats TLS tout seul.
+#   {$DOMAIN}             -> frontend (SPA React / nginx)
+#   {$DOMAIN}/auth/*      -> backend (Elysia)
+#   {$DOMAIN}/admin/*     -> backend
+#   {$DOMAIN}/manta/*     -> backend
+#   {$DOMAIN}/prospect/*  -> backend
+#   {$DOMAIN}/uploads/*   -> backend (fichiers statiques)
 
 {
 	email {$ACME_EMAIL}
 }
 
-# --- Site principal (frontend) ---
 {$DOMAIN} {
 	encode gzip zstd
-	reverse_proxy frontend:80
-}
 
-# --- API (backend) ---
-api.{$DOMAIN} {
-	encode gzip zstd
-	reverse_proxy backend:8080
+	@api path /auth/* /admin/* /manta/* /prospect/* /uploads/*
+	reverse_proxy @api backend:8080
+
+	reverse_proxy frontend:80
 }
