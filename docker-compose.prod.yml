@@ -3,12 +3,9 @@
 #
 # Prérequis :
 #   - Fichier .env à la racine avec toutes les variables (voir .env.example)
-#   - Reverse proxy (nginx/Traefik) sur le serveur pour le SSL/TLS
 #
-# Ports exposés :
-#   - 80  → frontend (nginx, HTML statique)
-#   - 8080 → backend (API Elysia) — à masquer derrière le reverse proxy
-#
+# Seul Caddy est exposé à Internet (ports 80 + 443) et gère le HTTPS automatique.
+# Le frontend et le backend ne sont accessibles que via Caddy (réseau Docker interne).
 # La DB n'est PAS exposée hors du réseau Docker (sécurité).
 
 services:
@@ -40,8 +37,6 @@ services:
     build: ./backend
     container_name: gcc-backend
     command: sh -c "bunx prisma migrate deploy && bun src/index.ts"
-    ports:
-      - "8080:8080"
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
@@ -81,11 +76,35 @@ services:
       args:
         API_URL: ${API_URL}
     container_name: gcc-frontend
-    ports:
-      - "80:80"
     depends_on:
       backend:
         condition: service_healthy
+    networks:
+      - front-tier
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "3"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: gcc-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - frontend
+      - backend
     networks:
       - front-tier
     restart: always
@@ -106,3 +125,7 @@ volumes:
     name: gcc-db-prod
   uploads-prod:
     name: gcc-uploads-prod
+  caddy-data:
+    name: gcc-caddy-data
+  caddy-config:
+    name: gcc-caddy-config
