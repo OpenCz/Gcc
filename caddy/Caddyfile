@@ -1,0 +1,23 @@
+# Reverse proxy + HTTPS automatique (Let's Encrypt)
+# Les valeurs {$DOMAIN} et {$ACME_EMAIL} viennent du fichier .env (passees au conteneur Caddy).
+#
+# - https://DOMAIN        -> frontend (SPA React servie par nginx)
+# - https://api.DOMAIN    -> backend (API Elysia)
+#
+# Caddy obtient et renouvelle les certificats TLS tout seul.
+
+{
+	email {$ACME_EMAIL}
+}
+
+# --- Site principal (frontend) ---
+{$DOMAIN} {
+	encode gzip zstd
+	reverse_proxy frontend:80
+}
+
+# --- API (backend) ---
+api.{$DOMAIN} {
+	encode gzip zstd
+	reverse_proxy backend:8080
+}

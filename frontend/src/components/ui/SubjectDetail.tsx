@@ -4,7 +4,7 @@ import { IconBook, IconLink, IconCheck, IconX, IconDownload, IconFile, IconEye }
 import { Badge } from "./Badge";
 import type { Subject } from "../../config";
 
-const API = "http://localhost:8080";
+import { API } from "../../lib/api";
 
 interface SubjectDetailProps {
   subject: Subject;

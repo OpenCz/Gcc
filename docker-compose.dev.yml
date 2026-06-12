@@ -1,0 +1,90 @@
+# Environnement de développement local
+# Usage : docker compose -f docker-compose.dev.yml up --build
+#
+# La DB est exposée sur localhost:5432 pour Prisma Studio (bunx prisma studio).
+# Le backend tourne avec --hot (rechargement à chaud).
+# Les sources src/ et prisma/ sont montées en volume pour refléter
+# les changements du host sans rebuild.
+#
+# Migrations : relancer le container backend après chaque `bunx prisma migrate dev`
+# exécuté depuis le host (il faut pointer DATABASE_URL vers 127.0.0.1:5432).
+
+services:
+  db:
+    image: postgres:16
+    container_name: gcc-db
+    environment:
+      POSTGRES_DB: gcc_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gcc_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - back-tier
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: gcc-backend
+    command: sh -c "bunx prisma migrate deploy && bun --hot src/index.ts"
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/gcc_dev
+      JWT_SECRET: dev_jwt_secret_change_in_prod
+      ADMIN_SECRET: dev_admin_secret_change_in_prod
+      FRONTEND_URL: http://localhost:3000
+      UPLOADS_DIR: /app/uploads
+      # OAuth Microsoft — laisser vide si non configuré en dev
+      MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+      MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+      MICROSOFT_REDIRECT_URI: http://localhost:3000/auth/callback
+      MICROSOFT_TENANT_ID: ${MICROSOFT_TENANT_ID:-}
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - uploads-dev:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - back-tier
+      - front-tier
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    container_name: gcc-frontend
+    ports:
+      - "3000:6767"
+    environment:
+      API_URL: http://localhost:8080
+    volumes:
+      - ./frontend/src:/app/src
+    depends_on:
+      - backend
+    networks:
+      - front-tier
+    restart: unless-stopped
+
+networks:
+  back-tier:
+    name: gcc-back-dev
+  front-tier:
+    name: gcc-front-dev
+
+volumes:
+  db-dev:
+    name: gcc-db-dev
+  uploads-dev:
+    name: gcc-uploads-dev

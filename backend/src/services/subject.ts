@@ -16,7 +16,7 @@ const DIFFICULTY_LABEL: Record<Difficulty, string> = {
   ADVANCED: "Avancé",
 };
 
-const UPLOADS_DIR = join(import.meta.dir, "../../uploads");
+const UPLOADS_DIR = process.env.UPLOADS_DIR ?? join(import.meta.dir, "../../uploads");
 
 export const subjectService = {
   create: async (data: SubjectServiceInput) => {

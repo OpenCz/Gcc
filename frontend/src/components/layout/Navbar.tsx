@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Group, Text } from "@mantine/core";
 import { IconUser } from "@tabler/icons-react";
 import epitechLogo from "../../assets/img/epitech_logo.png";
-
-const API = "http://localhost:8080";
+import { API } from "../../lib/api";
 
 export function Navbar() {
   const [time, setTime] = useState(new Date());
