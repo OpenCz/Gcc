@@ -141,8 +141,7 @@ const result = await Bun.build({
   sourcemap: "linked",
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
-    "process.env.API_URL": JSON.stringify(process.env.API_URL ?? "http://localhost:8080"),
-    "typeof process": JSON.stringify("object"),
+    "__API_URL__": JSON.stringify(process.env.API_URL ?? "http://localhost:8080"),
   },
   ...cliConfig,
 });
