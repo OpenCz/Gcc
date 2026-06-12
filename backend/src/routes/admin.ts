@@ -10,14 +10,15 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
     "/subjects",
     async ({ body }) => {
       const data = body as Record<string, unknown>;
-      const file = data["file"];
+      const raw = data["file"];
+      const newFiles = Array.isArray(raw) ? raw.filter((f): f is File => f instanceof File) : raw instanceof File ? [raw] : [];
       const subject = await subjectService.create({
         name: String(data["name"] ?? ""),
         description: String(data["description"] ?? ""),
         difficulty: String(data["difficulty"] ?? ""),
         tags: String(data["tags"] ?? ""),
-        url: data["url"] ? String(data["url"]) : undefined,
-        file: file instanceof File ? file : undefined,
+        urls: data["urls"] ? String(data["urls"]) : undefined,
+        newFiles,
       });
       return { success: true, subject };
     },
@@ -31,7 +32,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
           t.Literal("Avancé"),
         ]),
         tags: t.Optional(t.String()),
-        url: t.Optional(t.String()),
+        urls: t.Optional(t.String()),
         file: t.Optional(t.Any()),
       }),
     }
@@ -48,15 +49,16 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
     const data = body as Record<string, unknown>;
-    const file = data["file"];
+    const raw = data["file"];
+    const newFiles = Array.isArray(raw) ? raw.filter((f): f is File => f instanceof File) : raw instanceof File ? [raw] : [];
     const existingFiles = data["existingFiles"] ? String(data["existingFiles"]).split(",").filter(Boolean) : [];
     const subject = await subjectService.update(id, {
       name: String(data["name"] ?? ""),
       description: String(data["description"] ?? ""),
       difficulty: String(data["difficulty"] ?? ""),
       tags: String(data["tags"] ?? ""),
-      url: data["url"] ? String(data["url"]) : undefined,
-      file: file instanceof File ? file : undefined,
+      urls: data["urls"] ? String(data["urls"]) : undefined,
+      newFiles,
       existingFiles,
     });
     return { success: true, subject };
@@ -66,7 +68,7 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
       description: t.Optional(t.String()),
       difficulty: t.Union([t.Literal("Débutant"), t.Literal("Intermédiaire"), t.Literal("Avancé")]),
       tags: t.Optional(t.String()),
-      url: t.Optional(t.String()),
+      urls: t.Optional(t.String()),
       existingFiles: t.Optional(t.String()),
       file: t.Optional(t.Any()),
     }),

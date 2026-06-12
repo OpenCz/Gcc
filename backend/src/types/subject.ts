@@ -6,7 +6,7 @@ export interface SubjectCreateData {
   difficulty: Difficulty;
   tags: string[];
   files: string[];
-  url?: string;
+  urls: string[];
   proposed?: boolean;
 }
 
@@ -15,8 +15,8 @@ export interface SubjectServiceInput {
   description: string;
   difficulty: string;
   tags: string;
-  url?: string;
-  file?: File;
+  urls?: string;
+  newFiles?: File[];
 }
 
 export interface SubjectProposeInput {
@@ -24,6 +24,6 @@ export interface SubjectProposeInput {
   description?: string;
   difficulty: string;
   tags?: string;
-  url?: string;
-  file?: File;
+  urls?: string;
+  newFiles?: File[];
 }

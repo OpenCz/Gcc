@@ -29,7 +29,7 @@ export const subjectModel = {
   reject: (id: number, reason: string) =>
     prisma.subject.update({ where: { id }, data: { proposed: false, rejected: true, rejectionReason: reason } }),
 
-  update: (id: number, data: { name: string; description: string; difficulty: import("@prisma/client").Difficulty; tags: string[]; files: string[]; url?: string | null }) =>
+  update: (id: number, data: { name: string; description: string; difficulty: import("@prisma/client").Difficulty; tags: string[]; files: string[]; urls: string[] }) =>
     prisma.subject.update({ where: { id }, data }),
 
   deleteById: (id: number) =>

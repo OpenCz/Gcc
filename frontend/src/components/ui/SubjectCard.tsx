@@ -82,10 +82,10 @@ export function SubjectCard({ subject, onClick }: SubjectCardProps) {
               </Text>
             </Group>
           )}
-          {subject.url && (
+          {(subject.urls ?? []).length > 0 && (
             <Group gap={5}>
               <IconLink size={12} color="var(--epi-ghost)" />
-              <Text size="xs" c="dimmed">Lien</Text>
+              <Text size="xs" c="dimmed">{subject.urls.length} lien{subject.urls.length > 1 ? "s" : ""}</Text>
             </Group>
           )}
         </Group>
