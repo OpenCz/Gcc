@@ -15,7 +15,6 @@ model User {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   manta         Manta[]
-  whitelist     Whitelist?
 }
 
 model Event {
@@ -58,9 +57,9 @@ model Subject {
 }
 
 model Whitelist {
-  id      Int  @id @default(autoincrement())
-  userId  Int  @unique
-  user    User @relation(fields: [userId], references: [id])
+  id    Int    @id @default(autoincrement())
+  email String @unique
+  role  Role
 }
 
 enum Role {

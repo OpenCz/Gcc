@@ -2,6 +2,7 @@ import Elysia, { t } from "elysia";
 import { adminAuth } from "../middlewares/adminAuth";
 import { subjectService } from "../services/subject";
 import { eventService } from "../services/event";
+import { whitelistModel } from "../models/whitelist";
 
 export const adminRoutes = new Elysia({ prefix: "/admin" })
   .use(adminAuth)
@@ -91,6 +92,25 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
     return { success: true };
   }, {
     body: t.Object({ reason: t.String({ minLength: 1 }) }),
+  })
+  .get("/whitelist", async () => {
+    const whitelist = await whitelistModel.findAll();
+    return { whitelist };
+  })
+  .post("/whitelist", async ({ body }) => {
+    const entry = await whitelistModel.upsert(body.email, body.role);
+    return { entry };
+  }, {
+    body: t.Object({
+      email: t.String({ minLength: 1 }),
+      role: t.Union([t.Literal("MANTA"), t.Literal("PEDA")]),
+    }),
+  })
+  .delete("/whitelist/:id", async ({ params, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    await whitelistModel.delete(id);
+    return { success: true };
   })
   .post("/events", async ({ body }) => {
     const event = await eventService.create({

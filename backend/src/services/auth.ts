@@ -11,12 +11,13 @@ export const authService = {
   handleCallback: async (code: string): Promise<{ token: string; user: AuthUser }> => {
     const { email, displayName } = await microsoftOAuth.exchangeCode(code);
 
-    const whitelisted = await prisma.whitelist.findFirst({ where: { user: { email } }, include: { user: true } });
+    const whitelisted = await prisma.whitelist.findUnique({ where: { email } });
     if (!whitelisted) throw new Error("Unauthorized: email not in whitelist");
 
-    const user = await prisma.user.update({
+    const user = await prisma.user.upsert({
       where: { email },
-      data: { name: displayName ?? whitelisted.user.name ?? email },
+      create: { email, role: whitelisted.role, name: displayName ?? email, password: "" },
+      update: { name: displayName ?? undefined, role: whitelisted.role },
     });
 
     const token = await new SignJWT({ userId: user.id, role: user.role, email: user.email })
