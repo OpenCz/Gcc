@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Stack, Group, Text, ScrollArea } from "@mantine/core";
 import {
   IconEye, IconEyeOff, IconLogout, IconBook,
@@ -227,8 +227,15 @@ function ProposeTab() {
   const [urls, setUrls] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
   const [tags, setTags] = useState<string[]>([]);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const proposeFileRef = useRef<HTMLInputElement>(null);
+
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const pdfs = Array.from(list).filter(f => f.type === "application/pdf");
+    setPdfFiles(prev => [...prev, ...pdfs]);
+  };
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -258,7 +265,7 @@ function ProposeTab() {
 
   const reset = () => {
     setName(""); setDesc(""); setUrls([]); setDifficulty("Débutant");
-    setTags([]); setPdfFile(null); setSuccess(false); setError("");
+    setTags([]); setPdfFiles([]); setSuccess(false); setError("");
   };
 
   const submit = async (e: { preventDefault: () => void }) => {
@@ -273,7 +280,7 @@ function ProposeTab() {
       fd.append("tags", tags.join(","));
       const validUrls = urls.map(u => u.trim()).filter(Boolean);
       if (validUrls.length > 0) fd.append("urls", validUrls.join("\n"));
-      if (pdfFile) fd.append("file", pdfFile);
+      for (const f of pdfFiles) fd.append("file", f);
       const res = await fetch(`${API}/manta/subjects/propose`, {
         method: "POST",
         credentials: "include",
@@ -423,41 +430,39 @@ function ProposeTab() {
                 </div>
 
                 <div>
-                  <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
-                  <div
-                    onClick={() => document.getElementById("propose-file")?.click()}
-                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={e => {
-                      e.preventDefault(); setDragOver(false);
-                      const f = e.dataTransfer.files[0];
-                      if (f?.type === "application/pdf") setPdfFile(f);
-                    }}
-                    style={{
-                      border: `2px dashed ${dragOver ? "var(--epi-accent)" : pdfFile ? "var(--epi-beginner)" : "var(--epi-border)"}`,
-                      borderRadius: 10, padding: "24px 20px",
-                      textAlign: "center", cursor: "pointer", transition: "border-color 0.2s",
-                      background: dragOver ? "rgba(128,157,253,0.05)" : "none",
-                    }}
-                  >
-                    {pdfFile ? (
-                      <Group justify="center" gap="xs">
-                        <IconCheck size={16} color="var(--epi-beginner)" />
-                        <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{pdfFile.name}</Text>
-                        <button type="button" onClick={e => { e.stopPropagation(); setPdfFile(null); }}
+                  <Text size="sm" fw={600} mb={8}>Fichiers PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+                  <Stack gap={8}>
+                    {pdfFiles.map((f, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-beginner)", borderRadius: 8, padding: "10px 14px" }}>
+                        <Group gap="xs">
+                          <IconCheck size={14} color="var(--epi-beginner)" />
+                          <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{f.name}</Text>
+                        </Group>
+                        <button type="button" onClick={() => setPdfFiles(pdfFiles.filter((_, j) => j !== i))}
                           style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
                           <IconX size={12} />
                         </button>
-                      </Group>
-                    ) : (
+                      </div>
+                    ))}
+                    <div
+                      onClick={() => proposeFileRef.current?.click()}
+                      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={e => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
+                      style={{
+                        border: `2px dashed ${dragOver ? "var(--epi-accent)" : "var(--epi-border)"}`,
+                        borderRadius: 10, padding: "24px 20px", textAlign: "center", cursor: "pointer",
+                        transition: "border-color 0.2s", background: dragOver ? "rgba(128,157,253,0.05)" : "none",
+                      }}
+                    >
                       <Group justify="center" gap="xs">
                         <IconUpload size={16} color="var(--epi-ghost)" />
-                        <Text size="sm" c="dimmed">Glisse le PDF ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
+                        <Text size="sm" c="dimmed">Glisse des PDFs ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
                       </Group>
-                    )}
-                  </div>
-                  <input id="propose-file" type="file" accept="application/pdf" style={{ display: "none" }}
-                    onChange={e => { const f = e.target.files?.[0]; if (f) setPdfFile(f); }} />
+                    </div>
+                    <input ref={proposeFileRef} type="file" accept="application/pdf" multiple style={{ display: "none" }}
+                      onChange={e => { addFiles(e.target.files); if (proposeFileRef.current) proposeFileRef.current.value = ""; }} />
+                  </Stack>
                 </div>
 
                 {error && <Text size="sm" style={{ color: "var(--epi-advanced)" }}>{error}</Text>}

@@ -16,7 +16,7 @@ export interface SubjectServiceInput {
   difficulty: string;
   tags: string;
   urls?: string;
-  file?: File;
+  newFiles?: File[];
 }
 
 export interface SubjectProposeInput {
@@ -25,5 +25,5 @@ export interface SubjectProposeInput {
   difficulty: string;
   tags?: string;
   urls?: string;
-  file?: File;
+  newFiles?: File[];
 }

@@ -196,20 +196,22 @@ function SubjectForm({ token }: { token: string }) {
   const [urls, setUrls] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
   const [tags, setTags] = useState<string[]>([]);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (file: File | null) => {
-    if (file && file.type === "application/pdf") setPdfFile(file);
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const pdfs = Array.from(list).filter(f => f.type === "application/pdf");
+    setPdfFiles(prev => [...prev, ...pdfs]);
   };
 
   const reset = () => {
     setName(""); setDesc(""); setUrls([]); setDifficulty("Débutant");
-    setTags([]); setPdfFile(null); setSuccess(false); setError("");
+    setTags([]); setPdfFiles([]); setSuccess(false); setError("");
   };
 
   const submit = async (e: { preventDefault: () => void }) => {
@@ -225,7 +227,7 @@ function SubjectForm({ token }: { token: string }) {
       fd.append("tags", tags.join(","));
       const validUrls = urls.map(u => u.trim()).filter(Boolean);
       if (validUrls.length > 0) fd.append("urls", validUrls.join("\n"));
-      if (pdfFile) fd.append("file", pdfFile);
+      for (const f of pdfFiles) fd.append("file", f);
 
       const res = await fetch(`${API}/admin/subjects`, {
         method: "POST",
@@ -399,50 +401,40 @@ function SubjectForm({ token }: { token: string }) {
             </div>
 
             <div>
-              <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={e => {
-                  e.preventDefault(); setDragOver(false);
-                  handleFile(e.dataTransfer.files[0] ?? null);
-                }}
-                style={{
-                  border: `2px dashed ${dragOver ? "var(--epi-accent)" : pdfFile ? "var(--epi-beginner)" : "var(--epi-border)"}`,
-                  borderRadius: 10, padding: "28px 20px",
-                  textAlign: "center", cursor: "pointer",
-                  transition: "border-color 0.2s",
-                  background: dragOver ? "rgba(128,157,253,0.05)" : "none",
-                }}
-              >
-                {pdfFile ? (
-                  <Group justify="center" gap="xs">
-                    <IconCheck size={18} color="var(--epi-beginner)" />
-                    <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{pdfFile.name}</Text>
-                    <button
-                      type="button"
-                      onClick={e => { e.stopPropagation(); setPdfFile(null); }}
-                      style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}
-                    >
+              <Text size="sm" fw={600} mb={8}>Fichiers PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+              <Stack gap={8}>
+                {pdfFiles.map((f, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-beginner)", borderRadius: 8, padding: "10px 14px" }}>
+                    <Group gap="xs">
+                      <IconCheck size={14} color="var(--epi-beginner)" />
+                      <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{f.name}</Text>
+                    </Group>
+                    <button type="button" onClick={() => setPdfFiles(pdfFiles.filter((_, j) => j !== i))}
+                      style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
                       <IconX size={14} />
                     </button>
-                  </Group>
-                ) : (
+                  </div>
+                ))}
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={e => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
+                  style={{
+                    border: `2px dashed ${dragOver ? "var(--epi-accent)" : "var(--epi-border)"}`,
+                    borderRadius: 10, padding: "24px 20px", textAlign: "center", cursor: "pointer",
+                    transition: "border-color 0.2s", background: dragOver ? "rgba(128,157,253,0.05)" : "none",
+                  }}
+                >
                   <Stack gap={6} align="center">
                     <IconUpload size={22} color="var(--epi-ghost)" />
-                    <Text size="sm" c="dimmed">Glisse le PDF ici ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique pour choisir</span></Text>
-                    <Text size="xs" c="dimmed">PDF uniquement</Text>
+                    <Text size="sm" c="dimmed">Glisse des PDFs ici ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique pour choisir</span></Text>
+                    <Text size="xs" c="dimmed">PDF uniquement — plusieurs fichiers acceptés</Text>
                   </Stack>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/pdf"
-                style={{ display: "none" }}
-                onChange={e => handleFile(e.target.files?.[0] ?? null)}
-              />
+                </div>
+                <input ref={fileInputRef} type="file" accept="application/pdf" multiple style={{ display: "none" }}
+                  onChange={e => { addFiles(e.target.files); if (fileInputRef.current) fileInputRef.current.value = ""; }} />
+              </Stack>
             </div>
 
             {error && (
@@ -493,10 +485,18 @@ function EditModal({ subject, token, onClose, onSaved }: {
   const [urls, setUrls] = useState<string[]>(subject.urls ?? []);
   const [difficulty, setDifficulty] = useState<Difficulty>(subject.difficulty as Difficulty);
   const [tags, setTags] = useState<string[]>(subject.tags);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [keepExisting, setKeepExisting] = useState(subject.files.length > 0);
+  const [newPdfFiles, setNewPdfFiles] = useState<File[]>([]);
+  const [keepFiles, setKeepFiles] = useState<string[]>(subject.files);
+  const [dragOver, setDragOver] = useState(false);
+  const editFileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const addFiles = (list: FileList | null) => {
+    if (!list) return;
+    const pdfs = Array.from(list).filter(f => f.type === "application/pdf");
+    setNewPdfFiles(prev => [...prev, ...pdfs]);
+  };
 
   const submit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
@@ -510,9 +510,8 @@ function EditModal({ subject, token, onClose, onSaved }: {
       fd.append("tags", tags.join(","));
       const validUrls = urls.map(u => u.trim()).filter(Boolean);
       if (validUrls.length > 0) fd.append("urls", validUrls.join("\n"));
-      if (pdfFile) fd.append("file", pdfFile);
-      else if (keepExisting && subject.files.length > 0)
-        fd.append("existingFiles", subject.files.join(","));
+      if (keepFiles.length > 0) fd.append("existingFiles", keepFiles.join(","));
+      for (const f of newPdfFiles) fd.append("file", f);
 
       const res = await fetch(`${API}/admin/subjects/${subject.id}`, {
         method: "PATCH",
@@ -617,43 +616,45 @@ function EditModal({ subject, token, onClose, onSaved }: {
             </div>
 
             <div>
-              <Text size="sm" fw={600} mb={8}>Fichier PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
-              {subject.files[0] && keepExisting && !pdfFile && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px", marginBottom: 8 }}>
-                  <Group gap="xs">
-                    <IconFileText size={14} color="var(--epi-accent)" />
-                    <Text size="sm" c="dimmed">{subject.files[0]}</Text>
+              <Text size="sm" fw={600} mb={8}>Fichiers PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+              <Stack gap={8}>
+                {keepFiles.map(name => (
+                  <div key={name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px" }}>
+                    <Group gap="xs">
+                      <IconFileText size={14} color="var(--epi-accent)" />
+                      <Text size="sm" c="dimmed">{name}</Text>
+                    </Group>
+                    <button type="button" onClick={() => setKeepFiles(keepFiles.filter(f => f !== name))}
+                      style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
+                      <IconX size={14} />
+                    </button>
+                  </div>
+                ))}
+                {newPdfFiles.map((f, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-beginner)", borderRadius: 8, padding: "10px 14px" }}>
+                    <Group gap="xs">
+                      <IconCheck size={14} color="var(--epi-beginner)" />
+                      <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{f.name}</Text>
+                    </Group>
+                    <button type="button" onClick={() => setNewPdfFiles(newPdfFiles.filter((_, j) => j !== i))}
+                      style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
+                      <IconX size={14} />
+                    </button>
+                  </div>
+                ))}
+                <div onClick={() => editFileRef.current?.click()}
+                  onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={e => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
+                  style={{ border: `2px dashed ${dragOver ? "var(--epi-accent)" : "var(--epi-border)"}`, borderRadius: 10, padding: "20px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s", background: dragOver ? "rgba(128,157,253,0.05)" : "none" }}>
+                  <Group justify="center" gap="xs">
+                    <IconUpload size={16} color="var(--epi-ghost)" />
+                    <Text size="sm" c="dimmed">Glisse des PDFs ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
                   </Group>
-                  <button type="button" onClick={() => setKeepExisting(false)}
-                    style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
-                    <IconX size={14} />
-                  </button>
                 </div>
-              )}
-              {(!keepExisting || !subject.files[0] || pdfFile) && (
-                <div onClick={() => document.getElementById("edit-pdf")?.click()} style={{
-                  border: `2px dashed ${pdfFile ? "var(--epi-beginner)" : "var(--epi-border)"}`,
-                  borderRadius: 10, padding: "20px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s",
-                }}>
-                  {pdfFile ? (
-                    <Group justify="center" gap="xs">
-                      <IconCheck size={16} color="var(--epi-beginner)" />
-                      <Text size="sm" fw={600} style={{ color: "var(--epi-beginner)" }}>{pdfFile.name}</Text>
-                      <button type="button" onClick={e => { e.stopPropagation(); setPdfFile(null); setKeepExisting(subject.files.length > 0); }}
-                        style={{ background: "none", border: "none", color: "var(--epi-ghost)", cursor: "pointer", display: "flex" }}>
-                        <IconX size={12} />
-                      </button>
-                    </Group>
-                  ) : (
-                    <Group justify="center" gap="xs">
-                      <IconUpload size={16} color="var(--epi-ghost)" />
-                      <Text size="sm" c="dimmed">Glisse le PDF ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
-                    </Group>
-                  )}
-                </div>
-              )}
-              <input id="edit-pdf" type="file" accept="application/pdf" style={{ display: "none" }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) { setPdfFile(f); setKeepExisting(false); } }} />
+                <input ref={editFileRef} type="file" accept="application/pdf" multiple style={{ display: "none" }}
+                  onChange={e => { addFiles(e.target.files); if (editFileRef.current) editFileRef.current.value = ""; }} />
+              </Stack>
             </div>
 
             {error && <Text size="sm" style={{ color: "var(--epi-advanced)" }}>{error}</Text>}

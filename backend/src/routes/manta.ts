@@ -39,14 +39,15 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
   })
   .post("/subjects/propose", async ({ body }) => {
     const data = body as Record<string, unknown>;
-    const file = data["file"];
+    const raw = data["file"];
+    const newFiles = Array.isArray(raw) ? raw.filter((f): f is File => f instanceof File) : raw instanceof File ? [raw] : [];
     const subject = await subjectService.propose({
       name: String(data["name"] ?? ""),
       description: String(data["description"] ?? ""),
       difficulty: String(data["difficulty"] ?? ""),
       tags: String(data["tags"] ?? ""),
       urls: data["urls"] ? String(data["urls"]) : undefined,
-      file: file instanceof File ? file : undefined,
+      newFiles,
     });
     return { success: true, subject };
   }, {
