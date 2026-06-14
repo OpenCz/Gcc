@@ -15,9 +15,13 @@ export interface Session {
   description: string;
 }
 
+const today = new Date();
+const dateStr = today.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+const dateFormatted = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
 export const session: Session = {
   title: "Coding Club",
-  date: "Samedi 8 Mars 2026",
-  location: "Epitech — Le Hub",
+  date: dateFormatted,
+  location: "Epitech",
   description: "Bienvenue au Coding Club ! Retrouvez ici les ressources et sujets de la session.",
 };

@@ -12,7 +12,8 @@
     "@prisma/adapter-pg": "latest",
     "@prisma/client": "latest",
     "elysia": "latest",
-    "jose": "^6.2.3"
+    "jose": "^6.2.3",
+    "pg": "latest"
   },
   "devDependencies": {
     "@types/bun": "latest",
