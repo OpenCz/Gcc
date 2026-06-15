@@ -102,4 +102,12 @@ export const subjectService = {
 
   setVisible: (id: number, visible: boolean) =>
     subjectModel.setVisible(id, visible),
+
+  setPinned: (id: number, pinned: boolean) =>
+    subjectModel.setPinned(id, pinned),
+
+  getPinned: async () => {
+    const rows = await subjectModel.findPinned();
+    return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
 };

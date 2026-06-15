@@ -23,6 +23,10 @@ const app = new Elysia()
     const subjects = await subjectService.getVisible();
     return { subjects };
   })
+  .get("/subjects/pinned", async () => {
+    const subjects = await subjectService.getPinned();
+    return { subjects };
+  })
   .get("/uploads/:filename", async ({ params, set }) => {
     const filename = basename(params.filename);
     if (filename !== params.filename || !filename.toLowerCase().endsWith(".pdf")) {

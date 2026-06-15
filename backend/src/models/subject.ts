@@ -23,6 +23,12 @@ export const subjectModel = {
   setVisible: (id: number, visible: boolean) =>
     prisma.subject.update({ where: { id }, data: { visible } }),
 
+  setPinned: (id: number, pinned: boolean) =>
+    prisma.subject.update({ where: { id }, data: { pinned } }),
+
+  findPinned: () =>
+    prisma.subject.findMany({ where: { pinned: true, visible: true, proposed: false, rejected: false }, orderBy: { updatedAt: "desc" } }),
+
   approve: (id: number) =>
     prisma.subject.update({ where: { id }, data: { proposed: false } }),
 

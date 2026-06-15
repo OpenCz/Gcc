@@ -48,6 +48,7 @@ model Subject {
   files       String[]
   isNew       Boolean    @default(true)
   visible     Boolean    @default(false)
+  pinned      Boolean    @default(false)
   urls            String[] @default([])
   proposed        Boolean    @default(false)
   rejected        Boolean    @default(false)

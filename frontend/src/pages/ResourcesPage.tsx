@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Stack, Group, Text } from "@mantine/core";
 import {
   IconSearch, IconCalendar, IconMapPin, IconLayoutGrid, IconList,
-  IconBook, IconFile, IconX,
+  IconBook, IconFile, IconX, IconPin,
 } from "@tabler/icons-react";
 import { session } from "../config";
 import type { Subject } from "../config";
@@ -27,6 +27,7 @@ const DIFF_ORDER: Record<Subject["difficulty"], number> = { Débutant: 0, Interm
 
 export function ResourcesPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [pinned, setPinned] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [diffFilter, setDiffFilter] = useState<DiffFilter>("Tous");
@@ -35,10 +36,13 @@ export function ResourcesPage() {
   const [selected, setSelected] = useState<Subject | null>(null);
 
   useEffect(() => {
-    fetch(`${API}/subjects`)
-      .then(r => r.json())
-      .then((data: { subjects: Subject[] }) => setSubjects(data.subjects))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch(`${API}/subjects`).then(r => r.json()) as Promise<{ subjects: Subject[] }>,
+      fetch(`${API}/subjects/pinned`).then(r => r.json()) as Promise<{ subjects: Subject[] }>,
+    ]).then(([main, pin]) => {
+      setSubjects(main.subjects);
+      setPinned(pin.subjects);
+    }).finally(() => setLoading(false));
   }, []);
 
   const filtered = useMemo(() => {
@@ -108,6 +112,25 @@ export function ResourcesPage() {
           </Group>
         </Stack>
       </div>
+
+      {pinned.length > 0 && (
+        <Stack gap="sm">
+          <Group gap="xs">
+            <IconPin size={14} color="var(--epi-intermediate)" />
+            <Text size="sm" fw={700} style={{ color: "var(--epi-intermediate)" }}>Épinglé</Text>
+          </Group>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: viewMode === "grid" ? "repeat(3, 1fr)" : "1fr",
+            gap: 12,
+          }}>
+            {pinned.map(s => (
+              <SubjectCard key={`pin-${s.name}`} subject={s} onClick={() => setSelected(s)} />
+            ))}
+          </div>
+          <div style={{ borderTop: "1px solid var(--epi-border)", marginTop: 4 }} />
+        </Stack>
+      )}
 
       <div style={{
         display: "flex", alignItems: "center", gap: 10,

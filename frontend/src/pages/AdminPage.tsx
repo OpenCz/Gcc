@@ -4,6 +4,7 @@ import {
   IconLock, IconLogout, IconUpload, IconX, IconCheck,
   IconPlus, IconBook, IconInbox, IconFileText, IconLink,
   IconEye, IconEyeOff, IconPencil, IconUsers, IconTrash,
+  IconPin, IconPinnedOff,
 } from "@tabler/icons-react";
 import epitechLogo from "../assets/img/epitech_logo.png";
 import { Badge } from "../components/ui/Badge";
@@ -466,6 +467,7 @@ function SubjectForm({ token }: { token: string }) {
 interface AdminSubject extends Subject {
   id: number;
   visible: boolean;
+  pinned: boolean;
 }
 
 interface ProposedSubject extends Subject {
@@ -703,7 +705,18 @@ function AdminSubjectsTab({ token }: { token: string }) {
     });
   };
 
+  const togglePin = async (s: AdminSubject) => {
+    const next = !s.pinned;
+    setSubjects(prev => prev.map(x => x.id === s.id ? { ...x, pinned: next } : x));
+    await fetch(`${API}/admin/subjects/${s.id}/pinned`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ pinned: next }),
+    });
+  };
+
   const visible = subjects.filter(s => s.visible).length;
+  const pinned = subjects.filter(s => s.pinned).length;
 
   if (loading) return <Text c="dimmed" ta="center">Chargement…</Text>;
   if (error) return <Text style={{ color: "var(--epi-advanced)" }}>{error}</Text>;
@@ -714,6 +727,7 @@ function AdminSubjectsTab({ token }: { token: string }) {
         <Group gap="md">
           {[
             { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
+            { label: "Épinglés", value: pinned, color: "var(--epi-intermediate)" },
             { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
             { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
           ].map(({ label, value, color }) => (
@@ -786,6 +800,20 @@ function AdminSubjectsTab({ token }: { token: string }) {
                     }}
                   >
                     <IconPencil size={13} /> Modifier
+                  </button>
+                  <button
+                    onClick={() => togglePin(s)}
+                    title={s.pinned ? "Désépingler" : "Épingler pour les prospects"}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6,
+                      background: s.pinned ? "rgba(255,183,77,0.12)" : "none",
+                      border: `1px solid ${s.pinned ? "var(--epi-intermediate)" : "var(--epi-border)"}`,
+                      color: s.pinned ? "var(--epi-intermediate)" : "var(--epi-muted)",
+                      fontSize: 12, fontWeight: 700, padding: "6px 14px", borderRadius: 20,
+                      cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                    }}
+                  >
+                    {s.pinned ? <><IconPin size={13} /> Épinglé</> : <><IconPinnedOff size={13} /> Épingler</>}
                   </button>
                   <button
                     onClick={() => toggle(s)}

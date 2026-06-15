@@ -81,6 +81,14 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
   }, {
     body: t.Object({ visible: t.Boolean() }),
   })
+  .patch("/subjects/:id/pinned", async ({ params, body, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    await subjectService.setPinned(id, body.pinned);
+    return { success: true };
+  }, {
+    body: t.Object({ pinned: t.Boolean() }),
+  })
   .post("/subjects/:id/approve", async ({ params, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
