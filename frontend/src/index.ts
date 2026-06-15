@@ -15,7 +15,7 @@ const server = serve({
 const publicUrl = process.env.PUBLIC_URL ?? server.url.toString();
 console.log(`
 ┌─────────────────────────────────────────┐
-│         GCC — Dev Environment           │
+│          GCC  Dev Environment           │
 ├─────────────────────────────────────────┤
 │  Frontend  →  ${publicUrl.padEnd(25)}│
 │  Backend   →  http://localhost:8080     │

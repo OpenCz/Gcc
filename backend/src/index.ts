@@ -29,14 +29,22 @@ const app = new Elysia()
   })
   .get("/uploads/:filename", async ({ params, set }) => {
     const filename = basename(params.filename);
-    if (filename !== params.filename || !filename.toLowerCase().endsWith(".pdf")) {
+    const ext = filename.slice(filename.lastIndexOf(".")).toLowerCase();
+    const CONTENT_TYPES: Record<string, string> = {
+      ".pdf": "application/pdf",
+      ".png": "image/png",
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".md": "text/markdown",
+    };
+    if (filename !== params.filename || !CONTENT_TYPES[ext]) {
       set.status = 400;
-      return {message: "Invalid filename"}
+      return { message: "Invalid filename" };
     }
     try {
       const buf = await readFile(join(UPLOADS_DIR, filename));
       return new Response(buf, {
-        headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${filename}"` },
+        headers: { "Content-Type": CONTENT_TYPES[ext], "Content-Disposition": `inline; filename="${filename}"` },
       });
     } catch {
       set.status = 404;
