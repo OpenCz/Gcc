@@ -37,11 +37,14 @@ export function ResourcesPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/subjects`).then(r => r.json()) as Promise<{ subjects: Subject[] }>,
-      fetch(`${API}/subjects/pinned`).then(r => r.json()) as Promise<{ subjects: Subject[] }>,
+      fetch(`${API}/subjects`).then(r => r.ok ? r.json() : Promise.reject()) as Promise<{ subjects: Subject[] }>,
+      fetch(`${API}/subjects/pinned`).then(r => r.ok ? r.json() : Promise.reject()) as Promise<{ subjects: Subject[] }>,
     ]).then(([main, pin]) => {
-      setSubjects(main.subjects);
-      setPinned(pin.subjects);
+      setSubjects(main.subjects ?? []);
+      setPinned(pin.subjects ?? []);
+    }).catch(() => {
+      setSubjects([]);
+      setPinned([]);
     }).finally(() => setLoading(false));
   }, []);
 
