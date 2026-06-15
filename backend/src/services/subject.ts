@@ -18,12 +18,15 @@ const DIFFICULTY_LABEL: Record<Difficulty, string> = {
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? join(import.meta.dir, "../../uploads");
 
-async function savePdfs(files: File[]): Promise<string[]> {
+const ALLOWED_EXTENSIONS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".md"]);
+
+async function saveFiles(files: File[]): Promise<string[]> {
   const saved: string[] = [];
   for (const f of files) {
     const fileName = f.name.replace(/[\\/]/g, "_");
-    if (!fileName.toLowerCase().endsWith(".pdf"))
-      throw new Error("Only PDF files are allowed");
+    const ext = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
+    if (!ALLOWED_EXTENSIONS.has(ext))
+      throw new Error(`Type de fichier non autorisé : ${ext}`);
     const buffer = Buffer.from(await f.arrayBuffer());
     await writeFile(join(UPLOADS_DIR, fileName), buffer);
     saved.push(fileName);
@@ -38,7 +41,7 @@ export const subjectService = {
 
     const tags = data.tags.split(",").map(t => t.trim()).filter(Boolean);
     const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
-    const files = await savePdfs(data.newFiles ?? []);
+    const files = await saveFiles(data.newFiles ?? []);
 
     return subjectModel.create({ name: data.name, description: data.description, difficulty, tags, files, urls });
   },
@@ -59,7 +62,7 @@ export const subjectService = {
 
     const tags = (data.tags ?? "").split(",").map(t => t.trim()).filter(Boolean);
     const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
-    const files = await savePdfs(data.newFiles ?? []);
+    const files = await saveFiles(data.newFiles ?? []);
 
     return subjectModel.create({
       name: data.name,
@@ -94,7 +97,7 @@ export const subjectService = {
 
     const tags = data.tags.split(",").map(t => t.trim()).filter(Boolean);
     const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
-    const newFileNames = await savePdfs(data.newFiles ?? []);
+    const newFileNames = await saveFiles(data.newFiles ?? []);
     const files = [...(data.existingFiles ?? []), ...newFileNames];
 
     return subjectModel.update(id, { name: data.name, description: data.description, difficulty, tags, files, urls });

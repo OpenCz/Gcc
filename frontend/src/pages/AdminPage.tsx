@@ -204,10 +204,14 @@ function SubjectForm({ token }: { token: string }) {
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const ALLOWED_EXTS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".md"]);
   const addFiles = (list: FileList | null) => {
     if (!list) return;
-    const pdfs = Array.from(list).filter(f => f.type === "application/pdf");
-    setPdfFiles(prev => [...prev, ...pdfs]);
+    const valid = Array.from(list).filter(f => {
+      const ext = f.name.slice(f.name.lastIndexOf(".")).toLowerCase();
+      return ALLOWED_EXTS.has(ext);
+    });
+    setPdfFiles(prev => [...prev, ...valid]);
   };
 
   const reset = () => {
@@ -402,7 +406,7 @@ function SubjectForm({ token }: { token: string }) {
             </div>
 
             <div>
-              <Text size="sm" fw={600} mb={8}>Fichiers PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+              <Text size="sm" fw={600} mb={8}>Fichiers <Text component="span" size="xs" c="dimmed">(PDF, image, Markdown (optionnel))</Text></Text>
               <Stack gap={8}>
                 {pdfFiles.map((f, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-beginner)", borderRadius: 8, padding: "10px 14px" }}>
@@ -429,11 +433,11 @@ function SubjectForm({ token }: { token: string }) {
                 >
                   <Stack gap={6} align="center">
                     <IconUpload size={22} color="var(--epi-ghost)" />
-                    <Text size="sm" c="dimmed">Glisse des PDFs ici ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique pour choisir</span></Text>
-                    <Text size="xs" c="dimmed">PDF uniquement (plusieurs fichiers acceptés)</Text>
+                    <Text size="sm" c="dimmed">Glisse des fichiers ici ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique pour choisir</span></Text>
+                    <Text size="xs" c="dimmed">PDF, PNG, JPG, Markdown (plusieurs fichiers acceptés)</Text>
                   </Stack>
                 </div>
-                <input ref={fileInputRef} type="file" accept="application/pdf" multiple style={{ display: "none" }}
+                <input ref={fileInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.md" multiple style={{ display: "none" }}
                   onChange={e => { addFiles(e.target.files); if (fileInputRef.current) fileInputRef.current.value = ""; }} />
               </Stack>
             </div>
@@ -494,10 +498,14 @@ function EditModal({ subject, token, onClose, onSaved }: {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const ALLOWED_EXTS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".md"]);
   const addFiles = (list: FileList | null) => {
     if (!list) return;
-    const pdfs = Array.from(list).filter(f => f.type === "application/pdf");
-    setNewPdfFiles(prev => [...prev, ...pdfs]);
+    const valid = Array.from(list).filter(f => {
+      const ext = f.name.slice(f.name.lastIndexOf(".")).toLowerCase();
+      return ALLOWED_EXTS.has(ext);
+    });
+    setNewPdfFiles(prev => [...prev, ...valid]);
   };
 
   const submit = async (e: { preventDefault: () => void }) => {
@@ -618,7 +626,7 @@ function EditModal({ subject, token, onClose, onSaved }: {
             </div>
 
             <div>
-              <Text size="sm" fw={600} mb={8}>Fichiers PDF <Text component="span" size="xs" c="dimmed">(optionnel)</Text></Text>
+              <Text size="sm" fw={600} mb={8}>Fichiers <Text component="span" size="xs" c="dimmed">(PDF, image, Markdown (optionnel))</Text></Text>
               <Stack gap={8}>
                 {keepFiles.map(name => (
                   <div key={name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px" }}>
@@ -651,10 +659,10 @@ function EditModal({ subject, token, onClose, onSaved }: {
                   style={{ border: `2px dashed ${dragOver ? "var(--epi-accent)" : "var(--epi-border)"}`, borderRadius: 10, padding: "20px", textAlign: "center", cursor: "pointer", transition: "border-color 0.2s", background: dragOver ? "rgba(128,157,253,0.05)" : "none" }}>
                   <Group justify="center" gap="xs">
                     <IconUpload size={16} color="var(--epi-ghost)" />
-                    <Text size="sm" c="dimmed">Glisse des PDFs ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
+                    <Text size="sm" c="dimmed">Glisse des fichiers ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique</span></Text>
                   </Group>
                 </div>
-                <input ref={editFileRef} type="file" accept="application/pdf" multiple style={{ display: "none" }}
+                <input ref={editFileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.md" multiple style={{ display: "none" }}
                   onChange={e => { addFiles(e.target.files); if (editFileRef.current) editFileRef.current.value = ""; }} />
               </Stack>
             </div>
