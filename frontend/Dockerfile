@@ -13,10 +13,10 @@ RUN bun install
 COPY . .
 
 # Expose le port du frontend
-EXPOSE 3000
+EXPOSE 6767
 
-# Lance le serveur de dev
-CMD ["bun", "run", "dev", "--host", "0.0.0.0"]
+# Lance le serveur de dev avec hot reload (src/index.ts écoute sur PORT ?? 6767)
+CMD ["bun", "--hot", "src/index.ts"]
 
 
 

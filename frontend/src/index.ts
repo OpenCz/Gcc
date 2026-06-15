@@ -12,4 +12,12 @@ const server = serve({
   },
 });
 
-console.log(`Server running at ${server.url}`);
+const publicUrl = process.env.PUBLIC_URL ?? server.url.toString();
+console.log(`
+┌─────────────────────────────────────────┐
+│         GCC — Dev Environment           │
+├─────────────────────────────────────────┤
+│  Frontend  →  ${publicUrl.padEnd(25)}│
+│  Backend   →  http://localhost:8080     │
+└─────────────────────────────────────────┘
+`);
