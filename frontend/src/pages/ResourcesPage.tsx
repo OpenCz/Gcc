@@ -36,20 +36,18 @@ export function ResourcesPage() {
   const [selected, setSelected] = useState<Subject | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API}/subjects`).then(r => r.ok ? r.json() : Promise.reject()) as Promise<{ subjects: Subject[] }>,
-      fetch(`${API}/subjects/pinned`).then(r => r.ok ? r.json() : Promise.reject()) as Promise<{ subjects: Subject[] }>,
+    Promise.allSettled([
+      fetch(`${API}/subjects`).then(r => r.ok ? r.json() as Promise<{ subjects: Subject[] }> : Promise.reject()),
+      fetch(`${API}/subjects/pinned`).then(r => r.ok ? r.json() as Promise<{ subjects: Subject[] }> : Promise.reject()),
     ]).then(([main, pin]) => {
-      setSubjects(main.subjects ?? []);
-      setPinned(pin.subjects ?? []);
-    }).catch(() => {
-      setSubjects([]);
-      setPinned([]);
+      setSubjects(main.status === "fulfilled" ? main.value.subjects ?? [] : []);
+      setPinned(pin.status === "fulfilled" ? pin.value.subjects ?? [] : []);
     }).finally(() => setLoading(false));
   }, []);
 
   const filtered = useMemo(() => {
-    let list = [...subjects];
+    const pinnedNames = new Set(pinned.map(s => s.name));
+    let list = subjects.filter(s => !pinnedNames.has(s.name));
     if (diffFilter !== "Tous")
       list = list.filter(s => s.difficulty === diffFilter);
     if (search) {

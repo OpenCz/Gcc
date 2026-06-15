@@ -430,7 +430,7 @@ function SubjectForm({ token }: { token: string }) {
                   <Stack gap={6} align="center">
                     <IconUpload size={22} color="var(--epi-ghost)" />
                     <Text size="sm" c="dimmed">Glisse des PDFs ici ou <span style={{ color: "var(--epi-accent)", fontWeight: 600 }}>clique pour choisir</span></Text>
-                    <Text size="xs" c="dimmed">PDF uniquement — plusieurs fichiers acceptés</Text>
+                    <Text size="xs" c="dimmed">PDF uniquement (plusieurs fichiers acceptés)</Text>
                   </Stack>
                 </div>
                 <input ref={fileInputRef} type="file" accept="application/pdf" multiple style={{ display: "none" }}
@@ -708,11 +708,12 @@ function AdminSubjectsTab({ token }: { token: string }) {
   const togglePin = async (s: AdminSubject) => {
     const next = !s.pinned;
     setSubjects(prev => prev.map(x => x.id === s.id ? { ...x, pinned: next } : x));
-    await fetch(`${API}/admin/subjects/${s.id}/pinned`, {
+    const res = await fetch(`${API}/admin/subjects/${s.id}/pinned`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ pinned: next }),
     });
+    if (!res.ok) setSubjects(prev => prev.map(x => x.id === s.id ? { ...x, pinned: s.pinned } : x));
   };
 
   const visible = subjects.filter(s => s.visible).length;
