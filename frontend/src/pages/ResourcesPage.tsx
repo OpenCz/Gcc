@@ -7,6 +7,7 @@ import {
 import { session } from "../config";
 import type { Subject } from "../config";
 import { SubjectCard } from "../components/ui/SubjectCard";
+import { Badge } from "../components/ui/Badge";
 import { SubjectDetail } from "../components/ui/SubjectDetail";
 
 import { API } from "../lib/api";
@@ -115,21 +116,60 @@ export function ResourcesPage() {
       </div>
 
       {pinned.length > 0 && (
-        <Stack gap="sm">
+        <Stack gap={8}>
           <Group gap="xs">
-            <IconPin size={14} color="var(--epi-intermediate)" />
-            <Text size="sm" fw={700} style={{ color: "var(--epi-intermediate)" }}>Épinglé</Text>
+            <IconPin size={13} color="var(--epi-intermediate)" />
+            <Text size="xs" fw={700} style={{ color: "var(--epi-intermediate)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Épinglé</Text>
           </Group>
           <div style={{
-            display: "grid",
-            gridTemplateColumns: viewMode === "grid" ? "repeat(3, 1fr)" : "1fr",
-            gap: 12,
+            display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4, paddingTop: 4,
+            scrollbarWidth: "none",
           }}>
             {pinned.map(s => (
-              <SubjectCard key={`pin-${s.name}`} subject={s} onClick={() => setSelected(s)} />
+              <div
+                key={`pin-${s.name}`}
+                onClick={() => setSelected(s)}
+                style={{
+                  flexShrink: 0, width: 220,
+                  background: "var(--epi-surface)",
+                  border: "1px solid var(--epi-border)",
+                  borderRadius: 10, padding: "14px 16px",
+                  cursor: "pointer", display: "flex", flexDirection: "column", gap: 8,
+                  transition: "border-color 0.15s, transform 0.15s",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "var(--epi-accent)";
+                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "var(--epi-border)";
+                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+                }}
+              >
+                <Group justify="space-between" wrap="nowrap" gap="xs">
+                  <Text fw={700} size="sm" truncate style={{ minWidth: 0 }}>{s.name}</Text>
+                  <Badge level={s.difficulty} />
+                </Group>
+                {s.description && (
+                  <Text size="xs" c="dimmed" style={{
+                    display: "-webkit-box", WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: 1.5,
+                  }}>
+                    {s.description}
+                  </Text>
+                )}
+                <Group gap={8} mt="auto">
+                  {s.files.length > 0 && (
+                    <Text size="xs" c="dimmed">{s.files.length} fichier{s.files.length > 1 ? "s" : ""}</Text>
+                  )}
+                  {s.urls?.length > 0 && (
+                    <Text size="xs" c="dimmed">{s.urls.length} lien{s.urls.length > 1 ? "s" : ""}</Text>
+                  )}
+                </Group>
+              </div>
             ))}
           </div>
-          <div style={{ borderTop: "1px solid var(--epi-border)", marginTop: 4 }} />
+          <div style={{ borderTop: "1px solid var(--epi-border)" }} />
         </Stack>
       )}
 
