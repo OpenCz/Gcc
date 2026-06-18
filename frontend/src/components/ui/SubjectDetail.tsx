@@ -87,7 +87,7 @@ export function SubjectDetail({ subject, onClose }: SubjectDetailProps) {
 
         <ScrollArea flex={1} p="md">
           <Stack gap="md">
-            <Text size="sm" c="dimmed" style={{ lineHeight: 1.6 }}>
+            <Text size="sm" c="dimmed" style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
               {subject.description}
             </Text>
 
