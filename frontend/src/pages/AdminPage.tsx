@@ -1174,7 +1174,7 @@ function AdminApp({ token, onLogout }: { token: string; onLogout: () => void }) 
   const [tab, setTab] = useState<AdminTab>("subjects");
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--epi-bg)", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "100vh", background: "var(--epi-bg)", display: "flex", flexDirection: "column" }}>
       <div style={{
         height: 48, display: "flex", alignItems: "center",
         padding: "0 24px", background: "var(--epi-panel)",
