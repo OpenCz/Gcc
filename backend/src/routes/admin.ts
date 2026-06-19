@@ -2,11 +2,12 @@ import Elysia, { t } from "elysia";
 import { subjectService } from "../services/subject";
 import { eventService } from "../services/event";
 import { whitelistModel } from "../models/whitelist";
+import { verifyAdminToken } from "../lib/adminJwt";
 
 export const adminRoutes = new Elysia({ prefix: "/admin" })
-  .onBeforeHandle(({ headers }) => {
+  .onBeforeHandle(async ({ headers }) => {
     const token = headers["authorization"]?.replace("Bearer ", "");
-    if (!token || token !== process.env.ADMIN_SECRET)
+    if (!token || !(await verifyAdminToken(token)))
       return new Response(JSON.stringify({ message: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },

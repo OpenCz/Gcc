@@ -1,9 +1,10 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { adminRoutes } from "./routes/admin";
 import { authRoutes } from "./routes/auth";
 import { mantaRoutes } from "./routes/manta";
 import { subjectService } from "./services/subject";
+import { signAdminToken } from "./lib/adminJwt";
 import { basename, join } from "path";
 import { readFile } from "fs/promises";
 
@@ -51,6 +52,14 @@ const app = new Elysia()
       return { message: "File not found" };
     }
   })
+  .post("/admin/login", async ({ body, set }) => {
+    if (body.password !== process.env.ADMIN_SECRET) {
+      set.status = 401;
+      return { message: "Unauthorized" };
+    }
+    const token = await signAdminToken();
+    return { token };
+  }, { body: t.Object({ password: t.String() }) })
   .use(adminRoutes)
   .use(authRoutes)
   .use(mantaRoutes)

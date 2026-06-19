@@ -15,12 +15,15 @@ export function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/admin/subjects`, {
-        headers: { Authorization: `Bearer ${password}` },
+      const res = await fetch(`${API}/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
       });
       if (res.ok) {
-        sessionStorage.setItem("adminToken", password);
-        onUnlock(password);
+        const { token } = await res.json() as { token: string };
+        sessionStorage.setItem("adminToken", token);
+        onUnlock(token);
       } else {
         setError("Mot de passe incorrect.");
       }
