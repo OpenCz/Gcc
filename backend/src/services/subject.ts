@@ -1,7 +1,7 @@
 import type { Difficulty } from "@prisma/client";
 import { subjectModel } from "../models/subject";
 import type { SubjectServiceInput, SubjectProposeInput } from "../types/subject";
-import { writeFile } from "fs/promises";
+import { writeFile, unlink } from "fs/promises";
 import { join } from "path";
 
 const DIFFICULTY_MAP: Record<string, Difficulty> = {
@@ -43,7 +43,7 @@ export const subjectService = {
     const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
     const files = await saveFiles(data.newFiles ?? []);
 
-    return subjectModel.create({ name: data.name, description: data.description, difficulty, tags, files, urls });
+    return subjectModel.create({ name: data.name, description: data.description, difficulty, tags, files, urls, folderId: data.folderId ?? null });
   },
 
   getVisible: async () => {
@@ -100,11 +100,14 @@ export const subjectService = {
     const newFileNames = await saveFiles(data.newFiles ?? []);
     const files = [...(data.existingFiles ?? []), ...newFileNames];
 
-    return subjectModel.update(id, { name: data.name, description: data.description, difficulty, tags, files, urls });
+    return subjectModel.update(id, { name: data.name, description: data.description, difficulty, tags, files, urls, folderId: data.folderId });
   },
 
   setVisible: (id: number, visible: boolean) =>
     subjectModel.setVisible(id, visible),
+
+  setAllVisible: (visible: boolean, folderId: number | null) =>
+    subjectModel.setAllVisible(visible, folderId),
 
   setPinned: (id: number, pinned: boolean) =>
     subjectModel.setPinned(id, pinned),
@@ -112,5 +115,17 @@ export const subjectService = {
   getPinned: async () => {
     const rows = await subjectModel.findPinned();
     return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
+
+  delete: async (id: number) => {
+    const subject = await subjectModel.findById(id);
+    if (!subject) throw new Error("Subject not found");
+    await subjectModel.deleteById(id);
+    // supprime les fichiers uploadés qu'aucun autre sujet ne référence
+    for (const file of subject.files) {
+      const stillUsed = await subjectModel.countByFile(file);
+      if (stillUsed === 0)
+        await unlink(join(UPLOADS_DIR, file)).catch(() => {});
+    }
   },
 };

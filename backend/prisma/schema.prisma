@@ -39,6 +39,13 @@ model Manta {
   event     Event     @relation(fields: [eventId], references: [id])
 }
 
+model Folder {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  subjects  Subject[]
+}
+
 model Subject {
   id          Int        @id @default(autoincrement())
   name        String
@@ -53,6 +60,8 @@ model Subject {
   proposed        Boolean    @default(false)
   rejected        Boolean    @default(false)
   rejectionReason String?
+  folderId    Int?
+  folder      Folder?    @relation(fields: [folderId], references: [id], onDelete: SetNull)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }

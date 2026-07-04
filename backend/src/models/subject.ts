@@ -23,6 +23,9 @@ export const subjectModel = {
   setVisible: (id: number, visible: boolean) =>
     prisma.subject.update({ where: { id }, data: { visible } }),
 
+  setAllVisible: (visible: boolean, folderId: number | null) =>
+    prisma.subject.updateMany({ where: { proposed: false, rejected: false, folderId }, data: { visible } }),
+
   setPinned: (id: number, pinned: boolean) =>
     prisma.subject.update({ where: { id }, data: { pinned } }),
 
@@ -35,9 +38,12 @@ export const subjectModel = {
   reject: (id: number, reason: string) =>
     prisma.subject.update({ where: { id }, data: { proposed: false, rejected: true, rejectionReason: reason } }),
 
-  update: (id: number, data: { name: string; description: string; difficulty: import("@prisma/client").Difficulty; tags: string[]; files: string[]; urls: string[] }) =>
+  update: (id: number, data: { name: string; description: string; difficulty: import("@prisma/client").Difficulty; tags: string[]; files: string[]; urls: string[]; folderId?: number | null }) =>
     prisma.subject.update({ where: { id }, data }),
 
   deleteById: (id: number) =>
     prisma.subject.delete({ where: { id } }),
+
+  countByFile: (filename: string) =>
+    prisma.subject.count({ where: { files: { has: filename } } }),
 };

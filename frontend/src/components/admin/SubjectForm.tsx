@@ -1,22 +1,34 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Stack, Group, Text } from "@mantine/core";
-import { IconUpload, IconX, IconCheck, IconPlus, IconBook, IconLink } from "@tabler/icons-react";
+import { IconUpload, IconX, IconCheck, IconPlus, IconBook, IconLink, IconFolder } from "@tabler/icons-react";
 import { TagInput } from "../ui/TagInput";
-import { type Difficulty, DIFF_COLORS } from "./types";
+import { type Difficulty, type Folder, DIFF_COLORS } from "./types";
 import { API } from "../../lib/api";
 
-export function SubjectForm({ token }: { token: string }) {
+export function SubjectForm({ token, defaultFolderId = null }: {
+  token: string;
+  defaultFolderId?: number | null;
+}) {
   const [name, setName] = useState("");
   const [description, setDesc] = useState("");
   const [urls, setUrls] = useState<string[]>([]);
   const [difficulty, setDifficulty] = useState<Difficulty>("Débutant");
   const [tags, setTags] = useState<string[]>([]);
   const [pdfFiles, setPdfFiles] = useState<File[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [folderId, setFolderId] = useState<string>(defaultFolderId !== null ? String(defaultFolderId) : "");
   const [dragOver, setDragOver] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch(`${API}/admin/folders`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.ok ? r.json() as Promise<{ folders?: Folder[] }> : Promise.reject())
+      .then(d => setFolders(d.folders ?? []))
+      .catch(() => {});
+  }, [token]);
 
   const ALLOWED_EXTS = new Set([".pdf", ".png", ".jpg", ".jpeg", ".md"]);
   const addFiles = (list: FileList | null) => {
@@ -46,6 +58,7 @@ export function SubjectForm({ token }: { token: string }) {
       fd.append("tags", tags.join(","));
       const validUrls = urls.map(u => u.trim()).filter(Boolean);
       if (validUrls.length > 0) fd.append("urls", validUrls.join("\n"));
+      fd.append("folderId", folderId);
       for (const f of pdfFiles) fd.append("file", f);
 
       const res = await fetch(`${API}/admin/subjects`, {
@@ -218,6 +231,32 @@ export function SubjectForm({ token }: { token: string }) {
               <TagInput tags={tags} onChange={setTags} />
               <Text size="xs" c="dimmed" mt={6}>Appuie sur Entrée ou virgule pour ajouter un tag.</Text>
             </div>
+
+            {folders.length > 0 && (
+              <div>
+                <Text size="sm" fw={600} mb={8}>Dossier</Text>
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
+                  borderRadius: 8, padding: "10px 14px",
+                }}>
+                  <IconFolder size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                  <select
+                    value={folderId}
+                    onChange={e => setFolderId(e.target.value)}
+                    style={{
+                      flex: 1, background: "none", border: "none", outline: "none",
+                      color: "#fff", fontSize: 14, fontFamily: "inherit", cursor: "pointer",
+                    }}
+                  >
+                    <option value="" style={{ background: "var(--epi-surface)" }}>Racine (aucun dossier)</option>
+                    {folders.map(f => (
+                      <option key={f.id} value={f.id} style={{ background: "var(--epi-surface)" }}>{f.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div>
               <Text size="sm" fw={600} mb={8}>Fichiers <Text component="span" size="xs" c="dimmed">(PDF, image, Markdown (optionnel))</Text></Text>

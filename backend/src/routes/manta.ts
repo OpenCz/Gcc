@@ -2,6 +2,7 @@ import Elysia, { t } from "elysia";
 import { mantaAuth } from "../middlewares/mantaAuth";
 import { subjectService } from "../services/subject";
 import { eventService } from "../services/event";
+import { folderModel } from "../models/folder";
 
 const DIFF_LITERALS = t.Union([
   t.Literal("Débutant"),
@@ -14,6 +15,10 @@ export const mantaRoutes = new Elysia({ prefix: "/manta" })
   .get("/subjects", async () => {
     const subjects = await subjectService.getAll();
     return { subjects };
+  })
+  .get("/folders", async () => {
+    const folders = await folderModel.findAll();
+    return { folders };
   })
   .get("/subjects/proposed", async () => {
     const subjects = await subjectService.getProposed();
