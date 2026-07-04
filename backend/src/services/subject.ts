@@ -100,7 +100,7 @@ export const subjectService = {
     const newFileNames = await saveFiles(data.newFiles ?? []);
     const files = [...(data.existingFiles ?? []), ...newFileNames];
 
-    return subjectModel.update(id, { name: data.name, description: data.description, difficulty, tags, files, urls });
+    return subjectModel.update(id, { name: data.name, description: data.description, difficulty, tags, files, urls, folderId: data.folderId });
   },
 
   setVisible: (id: number, visible: boolean) =>
