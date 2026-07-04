@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Stack, Group, Text } from "@mantine/core";
 import {
   IconBook, IconFileText, IconLink,
@@ -28,6 +28,14 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
   const [folderModal, setFolderModal] = useState<FolderModal>(null);
   const [folderName, setFolderName] = useState("");
   const [folderLoading, setFolderLoading] = useState(false);
+  const [notice, setNotice] = useState("");
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showNotice = (message: string) => {
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    setNotice(message);
+    noticeTimer.current = setTimeout(() => setNotice(""), 4000);
+  };
 
   const authHeaders = { Authorization: `Bearer ${token}` };
 
@@ -106,6 +114,17 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
     });
   };
 
+  const makeAllVisible = async () => {
+    const before = subjects;
+    setSubjects(prev => prev.map(s => ({ ...s, visible: true })));
+    const res = await fetch(`${API}/admin/subjects/visible-all`, {
+      method: "PATCH",
+      headers: { ...authHeaders, "Content-Type": "application/json" },
+      body: JSON.stringify({ visible: true }),
+    });
+    if (!res.ok) setSubjects(before);
+  };
+
   const currentFolder = folders.find(f => f.id === currentFolderId) ?? null;
   const shownSubjects = useMemo(
     () => subjects.filter(s => s.folderId === currentFolderId),
@@ -128,22 +147,40 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
     <>
       <Stack gap="xl">
         {currentFolder === null ? (
-          <Group gap="md">
-            {[
-              { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
-              { label: "Épinglés", value: pinned, color: "var(--epi-intermediate)" },
-              { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
-              { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
-            ].map(({ label, value, color }) => (
-              <div key={label} style={{
-                background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
-                borderRadius: 10, padding: "14px 20px", flex: 1, textAlign: "center",
-              }}>
-                <Text fw={800} size="xl" style={{ color }}>{value}</Text>
-                <Text size="xs" c="dimmed">{label}</Text>
-              </div>
-            ))}
-          </Group>
+          <Stack gap="sm">
+            <Group gap="md">
+              {[
+                { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
+                { label: "Épinglés", value: pinned, color: "var(--epi-intermediate)" },
+                { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
+                { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
+              ].map(({ label, value, color }) => (
+                <div key={label} style={{
+                  background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
+                  borderRadius: 10, padding: "14px 20px", flex: 1, textAlign: "center",
+                }}>
+                  <Text fw={800} size="xl" style={{ color }}>{value}</Text>
+                  <Text size="xs" c="dimmed">{label}</Text>
+                </div>
+              ))}
+            </Group>
+            {visible < subjects.length && (
+              <Group justify="flex-end">
+                <button
+                  onClick={makeAllVisible}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    background: "rgba(74,222,128,0.1)", border: "1px solid var(--epi-beginner)",
+                    color: "var(--epi-beginner)", fontSize: 12, fontWeight: 700,
+                    padding: "6px 14px", borderRadius: 20,
+                    cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                  }}
+                >
+                  <IconEye size={13} /> Mettre tous les sujets visibles
+                </button>
+              </Group>
+            )}
+          </Stack>
         ) : (
           <Group gap="xs">
             <button
@@ -320,6 +357,25 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
         )}
       </Stack>
 
+      {/* Toast d'information */}
+      {notice && (
+        <div style={{
+          position: "fixed", bottom: 96, right: 32, zIndex: 100,
+          background: "var(--epi-panel)", border: "1px solid var(--epi-intermediate)",
+          borderRadius: 10, padding: "12px 16px", maxWidth: 320,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+          animation: "noticeIn 0.2s ease",
+        }}>
+          <Text size="sm" style={{ color: "var(--epi-intermediate)", lineHeight: 1.5 }}>{notice}</Text>
+          <style>{`
+            @keyframes noticeIn {
+              from { opacity: 0; transform: translateY(6px); }
+              to   { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+        </div>
+      )}
+
       {/* FAB + dropdown */}
       <div style={{ position: "fixed", bottom: 32, right: 32, zIndex: 100 }}>
         {fabOpen && (
@@ -332,7 +388,13 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
               boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
             }}>
               {[
-                { label: "Créer un dossier", Icon: IconFolderPlus, action: () => { setFolderName(""); setFolderModal({ mode: "create" }); } },
+                { label: "Créer un dossier", Icon: IconFolderPlus, action: () => {
+                  if (currentFolderId !== null) {
+                    showNotice("Les dossiers ne peuvent pas être imbriqués. Retourne à la racine pour en créer un.");
+                    return;
+                  }
+                  setFolderName(""); setFolderModal({ mode: "create" });
+                } },
                 { label: "Ajouter un sujet", Icon: IconBook, action: () => onAddSubject(currentFolderId) },
               ].map(({ label, Icon, action }) => (
                 <button

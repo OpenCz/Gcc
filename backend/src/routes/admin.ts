@@ -118,6 +118,12 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
       file: t.Optional(t.Any()),
     }),
   })
+  .patch("/subjects/visible-all", async ({ body }) => {
+    await subjectService.setAllVisible(body.visible);
+    return { success: true };
+  }, {
+    body: t.Object({ visible: t.Boolean() }),
+  })
   .patch("/subjects/:id/visible", async ({ params, body, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }

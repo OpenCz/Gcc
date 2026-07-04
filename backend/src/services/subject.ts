@@ -106,6 +106,9 @@ export const subjectService = {
   setVisible: (id: number, visible: boolean) =>
     subjectModel.setVisible(id, visible),
 
+  setAllVisible: (visible: boolean) =>
+    subjectModel.setAllVisible(visible),
+
   setPinned: (id: number, pinned: boolean) =>
     subjectModel.setPinned(id, pinned),
 
