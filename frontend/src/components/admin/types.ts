@@ -13,6 +13,13 @@ export interface AdminSubject extends Subject {
   id: number;
   visible: boolean;
   pinned: boolean;
+  folderId: number | null;
+}
+
+export interface Folder {
+  id: number;
+  name: string;
+  _count: { subjects: number };
 }
 
 export interface ProposedSubject extends Subject {
