@@ -11,6 +11,12 @@ import type { AdminTab } from "../components/admin/types";
 
 function AdminApp({ token, onLogout }: { token: string; onLogout: () => void }) {
   const [tab, setTab] = useState<AdminTab>("subjects");
+  const [defaultFolderId, setDefaultFolderId] = useState<number | null>(null);
+
+  const addSubjectInFolder = (folderId: number | null) => {
+    setDefaultFolderId(folderId);
+    setTab("add-subject");
+  };
 
   return (
     <div style={{ height: "100vh", background: "var(--epi-bg)", display: "flex", flexDirection: "column" }}>
@@ -31,9 +37,9 @@ function AdminApp({ token, onLogout }: { token: string; onLogout: () => void }) 
 
         <ScrollArea flex={1} style={{ background: "var(--epi-bg)" }}>
           <div style={{ maxWidth: 640, margin: "0 auto", padding: "32px 24px" }}>
-            {tab === "subjects" && <AdminSubjectsTab token={token} />}
+            {tab === "subjects" && <AdminSubjectsTab token={token} onAddSubject={addSubjectInFolder} />}
             {tab === "suggestions" && <SuggestionsTab token={token} />}
-            {tab === "add-subject" && <SubjectForm token={token} />}
+            {tab === "add-subject" && <SubjectForm token={token} defaultFolderId={defaultFolderId} key={defaultFolderId ?? "root"} />}
             {tab === "whitelist" && <WhitelistTab token={token} />}
           </div>
         </ScrollArea>

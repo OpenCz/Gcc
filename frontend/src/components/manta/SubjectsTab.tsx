@@ -1,24 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Stack, Group, Text } from "@mantine/core";
 import {
   IconEye, IconEyeOff, IconBook, IconFileText, IconLink,
+  IconFolder, IconArrowLeft, IconChevronRight,
 } from "@tabler/icons-react";
 import { Badge } from "../ui/Badge";
 import type { Subject } from "../../config";
-import { type SubjectWithVisible } from "./types";
+import { type SubjectWithVisible, type Folder } from "./types";
 import { API } from "../../lib/api";
 
 export function SubjectsTab({ token }: { token: string }) {
   const [subjects, setSubjects] = useState<SubjectWithVisible[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch(`${API}/manta/subjects`, { credentials: "include" })
-      .then(r => r.json() as Promise<{ subjects?: SubjectWithVisible[] }>)
-      .then(d => setSubjects(d.subjects ?? []))
-      .catch(() => setError("Impossible de charger les sujets."))
-      .finally(() => setLoading(false));
+    Promise.allSettled([
+      fetch(`${API}/manta/subjects`, { credentials: "include" }).then(r => r.ok ? r.json() as Promise<{ subjects?: SubjectWithVisible[] }> : Promise.reject()),
+      fetch(`${API}/manta/folders`, { credentials: "include" }).then(r => r.ok ? r.json() as Promise<{ folders?: Folder[] }> : Promise.reject()),
+    ]).then(([subs, fols]) => {
+      if (subs.status === "fulfilled") setSubjects(subs.value.subjects ?? []);
+      else setError("Impossible de charger les sujets.");
+      if (fols.status === "fulfilled") setFolders(fols.value.folders ?? []);
+    }).finally(() => setLoading(false));
   }, [token]);
 
   const toggle = async (subject: SubjectWithVisible) => {
@@ -32,35 +38,104 @@ export function SubjectsTab({ token }: { token: string }) {
     });
   };
 
+  const currentFolder = folders.find(f => f.id === currentFolderId) ?? null;
+  const shownSubjects = useMemo(
+    () => subjects.filter(s => s.folderId === currentFolderId),
+    [subjects, currentFolderId]
+  );
+  const folderCounts = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const s of subjects)
+      if (s.folderId !== null) counts.set(s.folderId, (counts.get(s.folderId) ?? 0) + 1);
+    return counts;
+  }, [subjects]);
+
   const visible = subjects.filter(s => s.visible).length;
+
+  if (loading) return <Text c="dimmed" ta="center">Chargement…</Text>;
+  if (error) return <Text style={{ color: "var(--epi-advanced)" }}>{error}</Text>;
 
   return (
     <Stack gap="xl">
-      <Group gap="md">
-        {[
-          { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
-          { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
-          { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
-        ].map(({ label, value, color }) => (
-          <div key={label} style={{
-            background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
-            borderRadius: 10, padding: "14px 20px", flex: 1, textAlign: "center",
-          }}>
-            <Text fw={800} size="xl" style={{ color }}>{value}</Text>
-            <Text size="xs" c="dimmed">{label}</Text>
-          </div>
-        ))}
-      </Group>
+      {currentFolder === null ? (
+        <Group gap="md">
+          {[
+            { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
+            { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
+            { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
+          ].map(({ label, value, color }) => (
+            <div key={label} style={{
+              background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
+              borderRadius: 10, padding: "14px 20px", flex: 1, textAlign: "center",
+            }}>
+              <Text fw={800} size="xl" style={{ color }}>{value}</Text>
+              <Text size="xs" c="dimmed">{label}</Text>
+            </div>
+          ))}
+        </Group>
+      ) : (
+        <Group gap="xs">
+          <button
+            onClick={() => setCurrentFolderId(null)}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: "none", border: "none",
+              color: "var(--epi-muted)", fontSize: 13, fontWeight: 600,
+              cursor: "pointer", fontFamily: "inherit", padding: "4px 0",
+            }}
+          >
+            <IconArrowLeft size={15} /> Sujets
+          </button>
+          <IconChevronRight size={13} color="var(--epi-ghost)" />
+          <Group gap={6}>
+            <IconFolder size={15} color="var(--epi-accent)" />
+            <Text fw={700} size="sm">{currentFolder.name}</Text>
+          </Group>
+        </Group>
+      )}
 
-      {loading ? (
-        <Text c="dimmed" ta="center">Chargement…</Text>
-      ) : error ? (
-        <Text style={{ color: "var(--epi-advanced)" }}>{error}</Text>
-      ) : subjects.length === 0 ? (
-        <Text c="dimmed" ta="center">Aucun sujet créé pour l'instant.</Text>
+      {currentFolder === null && folders.length > 0 && (
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+          gap: 10,
+        }}>
+          {folders.map(f => {
+            const count = folderCounts.get(f.id) ?? 0;
+            return (
+              <div
+                key={f.id}
+                onClick={() => setCurrentFolderId(f.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  background: "var(--epi-surface)",
+                  border: "1px solid var(--epi-border)",
+                  borderRadius: 10, padding: "12px 14px",
+                  cursor: "pointer", transition: "border-color 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--epi-accent)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--epi-border)"; }}
+              >
+                <IconFolder size={18} color="var(--epi-accent)" style={{ flexShrink: 0 }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <Text fw={600} size="sm" truncate>{f.name}</Text>
+                  <Text size="xs" c="dimmed">{count} sujet{count > 1 ? "s" : ""}</Text>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {shownSubjects.length === 0 ? (
+        <Text c="dimmed" ta="center">
+          {currentFolder === null
+            ? (subjects.length === 0 ? "Aucun sujet créé pour l'instant." : "Aucun sujet à la racine.")
+            : "Ce dossier est vide."}
+        </Text>
       ) : (
         <Stack gap="sm">
-          {subjects.map(s => (
+          {shownSubjects.map(s => (
             <div key={s.id} style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               background: "var(--epi-surface)", border: `1px solid ${s.visible ? "var(--epi-beginner)" : "var(--epi-border)"}`,

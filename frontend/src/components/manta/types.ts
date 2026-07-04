@@ -12,6 +12,13 @@ export const DIFF_COLORS: Record<Difficulty, string> = {
 export interface SubjectWithVisible extends Subject {
   id: number;
   visible: boolean;
+  folderId: number | null;
+}
+
+export interface Folder {
+  id: number;
+  name: string;
+  _count: { subjects: number };
 }
 
 export interface EventData {
