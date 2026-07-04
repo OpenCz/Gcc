@@ -43,4 +43,7 @@ export const subjectModel = {
 
   deleteById: (id: number) =>
     prisma.subject.delete({ where: { id } }),
+
+  countByFile: (filename: string) =>
+    prisma.subject.count({ where: { files: { has: filename } } }),
 };

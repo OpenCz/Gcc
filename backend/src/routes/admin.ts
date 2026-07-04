@@ -143,6 +143,12 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
   }, {
     body: t.Object({ pinned: t.Boolean() }),
   })
+  .delete("/subjects/:id", async ({ params, set }) => {
+    const id = Number(params.id);
+    if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }
+    await subjectService.delete(id);
+    return { success: true };
+  })
   .post("/subjects/:id/approve", async ({ params, set }) => {
     const id = Number(params.id);
     if (isNaN(id)) { set.status = 400; return { message: "Invalid id" }; }

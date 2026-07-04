@@ -116,6 +116,17 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
 
   const currentFolder = folders.find(f => f.id === currentFolderId) ?? null;
 
+  const deleteSubject = async (s: AdminSubject) => {
+    if (!confirm(`Supprimer définitivement « ${s.name} » ? Cette action est irréversible.`)) return;
+    const before = subjects;
+    setSubjects(prev => prev.filter(x => x.id !== s.id));
+    const res = await fetch(`${API}/admin/subjects/${s.id}`, {
+      method: "DELETE",
+      headers: authHeaders,
+    });
+    if (!res.ok) setSubjects(before);
+  };
+
   const toggleAllVisible = async () => {
     const target = !subjects.filter(s => s.folderId === currentFolderId).every(s => s.visible);
     const before = subjects;
@@ -356,6 +367,26 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
                     }}
                   >
                     {s.visible ? <><IconEye size={13} /> Visible</> : <><IconEyeOff size={13} /> Masqué</>}
+                  </button>
+                  <button
+                    onClick={() => deleteSubject(s)}
+                    title="Supprimer le sujet"
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "none", border: "1px solid var(--epi-border)",
+                      color: "var(--epi-ghost)", padding: "6px 9px", borderRadius: 20,
+                      cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = "var(--epi-advanced)";
+                      e.currentTarget.style.color = "var(--epi-advanced)";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = "var(--epi-border)";
+                      e.currentTarget.style.color = "var(--epi-ghost)";
+                    }}
+                  >
+                    <IconTrash size={13} />
                   </button>
                 </Group>
               </div>

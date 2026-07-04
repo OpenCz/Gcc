@@ -1,7 +1,7 @@
 import type { Difficulty } from "@prisma/client";
 import { subjectModel } from "../models/subject";
 import type { SubjectServiceInput, SubjectProposeInput } from "../types/subject";
-import { writeFile } from "fs/promises";
+import { writeFile, unlink } from "fs/promises";
 import { join } from "path";
 
 const DIFFICULTY_MAP: Record<string, Difficulty> = {
@@ -115,5 +115,17 @@ export const subjectService = {
   getPinned: async () => {
     const rows = await subjectModel.findPinned();
     return rows.map(s => ({ ...s, difficulty: DIFFICULTY_LABEL[s.difficulty] }));
+  },
+
+  delete: async (id: number) => {
+    const subject = await subjectModel.findById(id);
+    if (!subject) throw new Error("Subject not found");
+    await subjectModel.deleteById(id);
+    // supprime les fichiers uploadés qu'aucun autre sujet ne référence
+    for (const file of subject.files) {
+      const stillUsed = await subjectModel.countByFile(file);
+      if (stillUsed === 0)
+        await unlink(join(UPLOADS_DIR, file)).catch(() => {});
+    }
   },
 };
