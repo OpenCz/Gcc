@@ -114,18 +114,19 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
     });
   };
 
-  const makeAllVisible = async () => {
+  const currentFolder = folders.find(f => f.id === currentFolderId) ?? null;
+
+  const toggleAllVisible = async () => {
+    const target = !subjects.filter(s => s.folderId === currentFolderId).every(s => s.visible);
     const before = subjects;
-    setSubjects(prev => prev.map(s => ({ ...s, visible: true })));
+    setSubjects(prev => prev.map(s => s.folderId === currentFolderId ? { ...s, visible: target } : s));
     const res = await fetch(`${API}/admin/subjects/visible-all`, {
       method: "PATCH",
       headers: { ...authHeaders, "Content-Type": "application/json" },
-      body: JSON.stringify({ visible: true }),
+      body: JSON.stringify({ visible: target, folderId: currentFolderId }),
     });
     if (!res.ok) setSubjects(before);
   };
-
-  const currentFolder = folders.find(f => f.id === currentFolderId) ?? null;
   const shownSubjects = useMemo(
     () => subjects.filter(s => s.folderId === currentFolderId),
     [subjects, currentFolderId]
@@ -147,40 +148,22 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
     <>
       <Stack gap="xl">
         {currentFolder === null ? (
-          <Stack gap="sm">
-            <Group gap="md">
-              {[
-                { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
-                { label: "Épinglés", value: pinned, color: "var(--epi-intermediate)" },
-                { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
-                { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
-              ].map(({ label, value, color }) => (
-                <div key={label} style={{
-                  background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
-                  borderRadius: 10, padding: "14px 20px", flex: 1, textAlign: "center",
-                }}>
-                  <Text fw={800} size="xl" style={{ color }}>{value}</Text>
-                  <Text size="xs" c="dimmed">{label}</Text>
-                </div>
-              ))}
-            </Group>
-            {visible < subjects.length && (
-              <Group justify="flex-end">
-                <button
-                  onClick={makeAllVisible}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    background: "rgba(74,222,128,0.1)", border: "1px solid var(--epi-beginner)",
-                    color: "var(--epi-beginner)", fontSize: 12, fontWeight: 700,
-                    padding: "6px 14px", borderRadius: 20,
-                    cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
-                  }}
-                >
-                  <IconEye size={13} /> Mettre tous les sujets visibles
-                </button>
-              </Group>
-            )}
-          </Stack>
+          <Group gap="md">
+            {[
+              { label: "Visibles", value: visible, color: "var(--epi-beginner)" },
+              { label: "Épinglés", value: pinned, color: "var(--epi-intermediate)" },
+              { label: "Masqués", value: subjects.length - visible, color: "var(--epi-border)" },
+              { label: "Total", value: subjects.length, color: "var(--epi-accent)" },
+            ].map(({ label, value, color }) => (
+              <div key={label} style={{
+                background: "var(--epi-surface)", border: "1px solid var(--epi-border)",
+                borderRadius: 10, padding: "14px 20px", flex: 1, textAlign: "center",
+              }}>
+                <Text fw={800} size="xl" style={{ color }}>{value}</Text>
+                <Text size="xs" c="dimmed">{label}</Text>
+              </div>
+            ))}
+          </Group>
         ) : (
           <Group gap="xs">
             <button
@@ -258,6 +241,30 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
             })}
           </div>
         )}
+
+        {shownSubjects.length > 0 && (() => {
+          const allVisible = shownSubjects.every(s => s.visible);
+          return (
+            <Group justify="flex-end">
+              <button
+                onClick={toggleAllVisible}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: allVisible ? "none" : "rgba(74,222,128,0.1)",
+                  border: `1px solid ${allVisible ? "var(--epi-border)" : "var(--epi-beginner)"}`,
+                  color: allVisible ? "var(--epi-muted)" : "var(--epi-beginner)",
+                  fontSize: 12, fontWeight: 700,
+                  padding: "6px 14px", borderRadius: 20,
+                  cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
+                }}
+              >
+                {allVisible
+                  ? <><IconEyeOff size={13} /> Tout masquer{currentFolder ? " (dossier)" : ""}</>
+                  : <><IconEye size={13} /> Tout rendre visible{currentFolder ? " (dossier)" : ""}</>}
+              </button>
+            </Group>
+          );
+        })()}
 
         {shownSubjects.length === 0 ? (
           <Text c="dimmed" ta="center">

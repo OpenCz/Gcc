@@ -119,10 +119,13 @@ export const adminRoutes = new Elysia({ prefix: "/admin" })
     }),
   })
   .patch("/subjects/visible-all", async ({ body }) => {
-    await subjectService.setAllVisible(body.visible);
+    await subjectService.setAllVisible(body.visible, body.folderId);
     return { success: true };
   }, {
-    body: t.Object({ visible: t.Boolean() }),
+    body: t.Object({
+      visible: t.Boolean(),
+      folderId: t.Union([t.Number(), t.Null()]),
+    }),
   })
   .patch("/subjects/:id/visible", async ({ params, body, set }) => {
     const id = Number(params.id);
