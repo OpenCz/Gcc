@@ -2,15 +2,16 @@ import { useState, useRef } from "react";
 import { Stack, Group, Text } from "@mantine/core";
 import {
   IconUpload, IconX, IconCheck, IconPlus, IconBook,
-  IconLink, IconFileText,
+  IconLink, IconFileText, IconFolder,
 } from "@tabler/icons-react";
 import { TagInput } from "../ui/TagInput";
-import { type AdminSubject, type Difficulty, DIFF_COLORS } from "./types";
+import { type AdminSubject, type Difficulty, type Folder, DIFF_COLORS } from "./types";
 import { API } from "../../lib/api";
 
-export function EditModal({ subject, token, onClose, onSaved }: {
+export function EditModal({ subject, token, folders, onClose, onSaved }: {
   subject: AdminSubject;
   token: string;
+  folders: Folder[];
   onClose: () => void;
   onSaved: (updated: AdminSubject) => void;
 }) {
@@ -18,6 +19,7 @@ export function EditModal({ subject, token, onClose, onSaved }: {
   const [description, setDesc] = useState(subject.description);
   const [urls, setUrls] = useState<string[]>(subject.urls ?? []);
   const [difficulty, setDifficulty] = useState<Difficulty>(subject.difficulty as Difficulty);
+  const [folderId, setFolderId] = useState<string>(subject.folderId !== null ? String(subject.folderId) : "");
   const [tags, setTags] = useState<string[]>(subject.tags);
   const [newPdfFiles, setNewPdfFiles] = useState<File[]>([]);
   const [keepFiles, setKeepFiles] = useState<string[]>(subject.files);
@@ -49,6 +51,7 @@ export function EditModal({ subject, token, onClose, onSaved }: {
       const validUrls = urls.map(u => u.trim()).filter(Boolean);
       if (validUrls.length > 0) fd.append("urls", validUrls.join("\n"));
       if (keepFiles.length > 0) fd.append("existingFiles", keepFiles.join(","));
+      fd.append("folderId", folderId);
       for (const f of newPdfFiles) fd.append("file", f);
 
       const res = await fetch(`${API}/admin/subjects/${subject.id}`, {
@@ -151,6 +154,30 @@ export function EditModal({ subject, token, onClose, onSaved }: {
             <div>
               <Text size="sm" fw={600} mb={8}>Tags / Langage</Text>
               <TagInput tags={tags} onChange={setTags} />
+            </div>
+
+            <div>
+              <Text size="sm" fw={600} mb={8}>Dossier</Text>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                background: "var(--epi-bg)", border: "1px solid var(--epi-border)",
+                borderRadius: 8, padding: "10px 14px",
+              }}>
+                <IconFolder size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
+                <select
+                  value={folderId}
+                  onChange={e => setFolderId(e.target.value)}
+                  style={{
+                    flex: 1, background: "none", border: "none", outline: "none",
+                    color: "#fff", fontSize: 14, fontFamily: "inherit", cursor: "pointer",
+                  }}
+                >
+                  <option value="" style={{ background: "var(--epi-surface)" }}>Racine (aucun dossier)</option>
+                  {folders.map(f => (
+                    <option key={f.id} value={f.id} style={{ background: "var(--epi-surface)" }}>{f.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
