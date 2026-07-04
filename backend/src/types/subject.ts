@@ -8,6 +8,7 @@ export interface SubjectCreateData {
   files: string[];
   urls: string[];
   proposed?: boolean;
+  folderId?: number | null;
 }
 
 export interface SubjectServiceInput {
@@ -17,6 +18,7 @@ export interface SubjectServiceInput {
   tags: string;
   urls?: string;
   newFiles?: File[];
+  folderId?: number | null;
 }
 
 export interface SubjectProposeInput {

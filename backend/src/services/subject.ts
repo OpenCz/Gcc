@@ -43,7 +43,7 @@ export const subjectService = {
     const urls = (data.urls ?? "").split("\n").map(u => u.trim()).filter(Boolean);
     const files = await saveFiles(data.newFiles ?? []);
 
-    return subjectModel.create({ name: data.name, description: data.description, difficulty, tags, files, urls });
+    return subjectModel.create({ name: data.name, description: data.description, difficulty, tags, files, urls, folderId: data.folderId ?? null });
   },
 
   getVisible: async () => {
