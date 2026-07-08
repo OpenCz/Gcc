@@ -231,7 +231,7 @@ export function EditModal({ subject, token, folders, onClose, onSaved }: {
                 cursor: "pointer", fontFamily: "inherit",
               }}>Annuler</button>
               <button type="submit" disabled={loading || !name} style={{
-                background: name ? "var(--epi-accent)" : "var(--epi-bg)",
+                background: name ? "var(--epi-blue)" : "var(--epi-bg)",
                 border: "1px solid var(--epi-border)", color: name ? "#fff" : "var(--epi-ghost)",
                 fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 8,
                 cursor: name && !loading ? "pointer" : "not-allowed", transition: "0.2s", fontFamily: "inherit",

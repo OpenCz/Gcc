@@ -20,8 +20,6 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
       style={{
         width: 192,
         flexShrink: 0,
-        borderRight: "1px solid var(--epi-border)",
-        background: "var(--epi-bg)",
         paddingTop: 20,
       }}
     >
@@ -44,6 +42,7 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
           active={currentPage === page}
           onClick={() => onNavigate(page)}
           color="epitech"
+          style={currentPage === page ? { background: "var(--epi-blue)", color: "#fff" } : undefined}
         />
       ))}
     </Stack>

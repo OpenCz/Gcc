@@ -87,7 +87,7 @@ export function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }
                   disabled={loading || !password}
                   style={{
                     width: "100%",
-                    background: password ? "var(--epi-accent)" : "var(--epi-bg)",
+                    background: password ? "var(--epi-blue)" : "var(--epi-bg)",
                     border: "1px solid var(--epi-border)",
                     color: password ? "#fff" : "var(--epi-ghost)",
                     fontSize: 14, fontWeight: 700,

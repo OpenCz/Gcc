@@ -71,7 +71,7 @@ export function WhitelistTab({ token }: { token: string }) {
             ))}
             <button onClick={add} disabled={loading || !email.trim()} style={{
               marginLeft: "auto", padding: "6px 16px", borderRadius: 8, fontSize: 12,
-              fontWeight: 600, cursor: "pointer", background: "var(--epi-accent)",
+              fontWeight: 600, cursor: "pointer", background: "var(--epi-blue)",
               color: "#fff", border: "none", opacity: loading || !email.trim() ? 0.5 : 1,
             }}>
               <Group gap={6}><IconPlus size={12} />{loading ? "Ajout…" : "Ajouter"}</Group>

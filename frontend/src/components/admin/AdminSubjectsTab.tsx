@@ -466,10 +466,10 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
           title="Ajouter"
           style={{
             width: 48, height: 48, borderRadius: "50%",
-            background: "var(--epi-accent)", border: "none",
+            background: "var(--epi-blue)", border: "none",
             color: "#fff", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 4px 14px rgba(128,157,253,0.35)",
+            boxShadow: "0 4px 14px rgba(1,58,251,0.4)",
             transition: "transform 0.2s",
             transform: fabOpen ? "rotate(45deg)" : "rotate(0)",
           }}
@@ -528,7 +528,7 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
                     }}>Annuler</button>
                   <button type="submit" disabled={folderLoading || !folderName.trim()}
                     style={{
-                      background: folderName.trim() ? "var(--epi-accent)" : "var(--epi-bg)",
+                      background: folderName.trim() ? "var(--epi-blue)" : "var(--epi-bg)",
                       border: "1px solid var(--epi-border)", color: folderName.trim() ? "#fff" : "var(--epi-ghost)",
                       fontSize: 13, fontWeight: 700, padding: "8px 18px", borderRadius: 8,
                       cursor: folderName.trim() && !folderLoading ? "pointer" : "not-allowed",

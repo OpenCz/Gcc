@@ -34,9 +34,9 @@ export function MantaSidebar({ activeTab, onNavigate, onLogout }: {
             onClick={() => onNavigate(id)}
             style={{
               display: "flex", alignItems: "center", gap: 10,
-              background: activeTab === id ? "rgba(128,157,253,0.1)" : "none",
+              background: activeTab === id ? "var(--epi-blue)" : "none",
               border: "none",
-              color: activeTab === id ? "var(--epi-accent)" : "var(--epi-muted)",
+              color: activeTab === id ? "#fff" : "var(--epi-muted)",
               fontSize: 13, fontWeight: activeTab === id ? 700 : 500,
               padding: "9px 12px", borderRadius: 8,
               cursor: "pointer", transition: "background 0.15s, color 0.15s",

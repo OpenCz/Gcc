@@ -97,7 +97,7 @@ export function SubjectForm({ token, defaultFolderId = null }: {
         onClick={reset}
         style={{
           display: "flex", alignItems: "center", gap: 6,
-          background: "var(--epi-accent)", color: "#fff",
+          background: "var(--epi-blue)", color: "#fff",
           border: "none", fontSize: 14, fontWeight: 700,
           padding: "10px 24px", borderRadius: 8,
           cursor: "pointer", fontFamily: "inherit",
@@ -303,7 +303,7 @@ export function SubjectForm({ token, defaultFolderId = null }: {
               type="submit"
               disabled={loading || !name}
               style={{
-                background: name ? "var(--epi-accent)" : "var(--epi-bg)",
+                background: name ? "var(--epi-blue)" : "var(--epi-bg)",
                 border: "1px solid var(--epi-border)",
                 color: name ? "#fff" : "var(--epi-ghost)",
                 fontSize: 14, fontWeight: 700,
