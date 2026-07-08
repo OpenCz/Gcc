@@ -132,7 +132,7 @@ export function ProposeTab() {
                       onChange={e => setName(e.target.value)}
                       placeholder="ex : Workshop Rust"
                       required
-                      style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+                      style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit" }}
                     />
                   </div>
                 </div>
@@ -147,7 +147,7 @@ export function ProposeTab() {
                     style={{
                       width: "100%", background: "var(--epi-bg)",
                       border: "1px solid var(--epi-border)", borderRadius: 8,
-                      padding: "10px 14px", color: "#fff", fontSize: 14,
+                      padding: "10px 14px", color: "var(--epi-text)", fontSize: 14,
                       fontFamily: "inherit", resize: "vertical", outline: "none",
                       boxSizing: "border-box",
                     }}
@@ -169,7 +169,7 @@ export function ProposeTab() {
                             value={u}
                             onChange={e => { const next = [...urls]; next[i] = e.target.value; setUrls(next); }}
                             placeholder="https://…"
-                            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+                            style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit" }}
                           />
                         </div>
                         <button type="button" onClick={() => setUrls(urls.filter((_, j) => j !== i))}

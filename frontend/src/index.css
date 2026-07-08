@@ -29,6 +29,8 @@ body {
   --epi-border:  var(--mantine-color-dark-4);   /* #3a3a3a — borders       */
   --epi-muted:   var(--mantine-color-dark-3);   /* #aaaaaa — muted text    */
   --epi-ghost:   var(--mantine-color-dark-2);   /* #777777 — very muted    */
+  --epi-text:    #ffffff;                       /* primary text            */
+  --epi-input:   var(--mantine-color-dark-7);   /* input backgrounds       */
 }
 
 :root {
@@ -38,4 +40,27 @@ body {
   --epi-beginner:     #4ade80;
   --epi-intermediate: #facc15;
   --epi-advanced:     #f87171;
+}
+
+[data-mantine-color-scheme="light"] {
+  --epi-bg:      #f4f4f5;   /* main content            */
+  --epi-panel:   #ffffff;   /* header/sidebar/panel    */
+  --epi-surface: #ffffff;   /* cards, inputs           */
+  --epi-border:  #e4e4e7;   /* borders                 */
+  --epi-muted:   #52525b;   /* muted text              */
+  --epi-ghost:   #a1a1aa;   /* very muted              */
+  --epi-text:    #18181b;   /* primary text            */
+  --epi-input:   #f4f4f5;   /* input backgrounds       */
+
+  /* variantes plus sombres pour rester lisibles sur fond clair */
+  --epi-accent:       #3b5bdb;
+  --epi-accent-dark:  #2f4fc7;
+  --epi-beginner:     #16a34a;
+  --epi-intermediate: #b45309;
+  --epi-advanced:     #dc2626;
+}
+
+/* Le logo Epitech est un PNG blanc : on l'inverse en mode clair. */
+[data-mantine-color-scheme="light"] img[alt="Epitech"] {
+  filter: invert(1);
 }

@@ -139,7 +139,7 @@ export function SubjectForm({ token, defaultFolderId = null }: {
                   required
                   style={{
                     flex: 1, background: "none", border: "none", outline: "none",
-                    color: "#fff", fontSize: 14, fontFamily: "inherit",
+                    color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit",
                   }}
                 />
               </div>
@@ -156,7 +156,7 @@ export function SubjectForm({ token, defaultFolderId = null }: {
                   width: "100%", background: "var(--epi-bg)",
                   border: "1px solid var(--epi-border)",
                   borderRadius: 8, padding: "10px 14px",
-                  color: "#fff", fontSize: 14, fontFamily: "inherit",
+                  color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit",
                   resize: "vertical", outline: "none",
                   boxSizing: "border-box",
                 }}
@@ -178,7 +178,7 @@ export function SubjectForm({ token, defaultFolderId = null }: {
                         value={u}
                         onChange={e => { const next = [...urls]; next[i] = e.target.value; setUrls(next); }}
                         placeholder="https://…"
-                        style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }}
+                        style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit" }}
                       />
                     </div>
                     <button type="button" onClick={() => setUrls(urls.filter((_, j) => j !== i))}
@@ -246,7 +246,7 @@ export function SubjectForm({ token, defaultFolderId = null }: {
                     onChange={e => setFolderId(e.target.value)}
                     style={{
                       flex: 1, background: "none", border: "none", outline: "none",
-                      color: "#fff", fontSize: 14, fontFamily: "inherit", cursor: "pointer",
+                      color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit", cursor: "pointer",
                     }}
                   >
                     <option value="" style={{ background: "var(--epi-surface)" }}>Racine (aucun dossier)</option>

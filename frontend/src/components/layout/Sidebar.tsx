@@ -28,7 +28,7 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         fw={700}
         px="xs"
         mb={4}
-        style={{ letterSpacing: "0.2em", color: "white" }}
+        style={{ letterSpacing: "0.2em", color: "var(--epi-text)" }}
       >
         OVERVIEW
         <Text component="span" c="epitech">_</Text>

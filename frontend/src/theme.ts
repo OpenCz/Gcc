@@ -48,7 +48,7 @@ export const theme = createTheme({
       },
     },
     Paper: {
-      defaultProps: { bg: "dark.6" },
+      defaultProps: { bg: "var(--epi-panel)" },
     },
   },
 });

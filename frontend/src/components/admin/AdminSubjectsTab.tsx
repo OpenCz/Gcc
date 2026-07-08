@@ -514,7 +514,7 @@ export function AdminSubjectsTab({ token, onAddSubject }: {
                     autoFocus
                     style={{
                       flex: 1, background: "none", border: "none", outline: "none",
-                      color: "#fff", fontSize: 14, fontFamily: "inherit",
+                      color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit",
                     }}
                   />
                 </div>

@@ -188,7 +188,7 @@ export function ResourcesPage() {
           placeholder="Rechercher un sujet ou un tag..."
           style={{
             flex: 1, background: "none", border: "none", outline: "none",
-            color: "#fff", fontSize: 14, fontFamily: "inherit",
+            color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit",
           }}
         />
         {search && (
@@ -256,7 +256,7 @@ export function ResourcesPage() {
               onChange={e => setSortMode(e.target.value as SortMode)}
               style={{
                 background: "none", border: "none", outline: "none",
-                color: "#ccc", fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+                color: "var(--epi-text)", fontSize: 13, cursor: "pointer", fontFamily: "inherit",
               }}
             >
               {SORT_OPTIONS.map(o => (

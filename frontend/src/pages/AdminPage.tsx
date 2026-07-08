@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ScrollArea, Group, Text } from "@mantine/core";
 import epitechLogo from "../assets/img/epitech_logo.png";
+import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { PasswordGate } from "../components/admin/PasswordGate";
 import { AdminSidebar } from "../components/admin/AdminSidebar";
 import { SubjectForm } from "../components/admin/SubjectForm";
@@ -25,11 +26,12 @@ function AdminApp({ token, onLogout }: { token: string; onLogout: () => void }) 
         padding: "0 24px", background: "var(--epi-panel)",
         borderBottom: "1px solid var(--epi-border)", flexShrink: 0,
       }}>
-        <Group gap="sm">
+        <Group gap="sm" style={{ flex: 1 }}>
           <a href="/"><img src={epitechLogo} height={20} alt="Epitech" style={{ cursor: "pointer" }} /></a>
           <Text size="sm" c="dimmed">/</Text>
           <Text size="sm" fw={600}>Zone Admin</Text>
         </Group>
+        <ThemeToggle />
       </div>
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>

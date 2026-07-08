@@ -73,7 +73,7 @@ export function PasswordGate({ onUnlock }: { onUnlock: (token: string) => void }
                       autoFocus
                       style={{
                         flex: 1, background: "none", border: "none", outline: "none",
-                        color: "#fff", fontSize: 14, fontFamily: "inherit",
+                        color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit",
                       }}
                     />
                   </div>

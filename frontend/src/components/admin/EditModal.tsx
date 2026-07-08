@@ -101,14 +101,14 @@ export function EditModal({ subject, token, folders, onClose, onSaved }: {
               <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px" }}>
                 <IconBook size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
                 <input value={name} onChange={e => setName(e.target.value)} required
-                  style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }} />
+                  style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit" }} />
               </div>
             </div>
 
             <div>
               <Text size="sm" fw={600} mb={8}>Description</Text>
               <textarea value={description} onChange={e => setDesc(e.target.value)} rows={3}
-                style={{ width: "100%", background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px", color: "#fff", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px", color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit", resize: "vertical", outline: "none", boxSizing: "border-box" }} />
             </div>
 
             <div>
@@ -119,7 +119,7 @@ export function EditModal({ subject, token, folders, onClose, onSaved }: {
                     <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, background: "var(--epi-bg)", border: "1px solid var(--epi-border)", borderRadius: 8, padding: "10px 14px" }}>
                       <IconLink size={14} color="var(--epi-ghost)" style={{ flexShrink: 0 }} />
                       <input value={u} onChange={e => { const next = [...urls]; next[i] = e.target.value; setUrls(next); }} placeholder="https://…"
-                        style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontSize: 14, fontFamily: "inherit" }} />
+                        style={{ flex: 1, background: "none", border: "none", outline: "none", color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit" }} />
                     </div>
                     <button type="button" onClick={() => setUrls(urls.filter((_, j) => j !== i))}
                       style={{ background: "none", border: "1px solid var(--epi-border)", color: "var(--epi-ghost)", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", padding: "0 10px" }}>
@@ -169,7 +169,7 @@ export function EditModal({ subject, token, folders, onClose, onSaved }: {
                   onChange={e => setFolderId(e.target.value)}
                   style={{
                     flex: 1, background: "none", border: "none", outline: "none",
-                    color: "#fff", fontSize: 14, fontFamily: "inherit", cursor: "pointer",
+                    color: "var(--epi-text)", fontSize: 14, fontFamily: "inherit", cursor: "pointer",
                   }}
                 >
                   <option value="" style={{ background: "var(--epi-surface)" }}>Racine (aucun dossier)</option>

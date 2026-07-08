@@ -162,7 +162,7 @@ export function SuggestionsTab({ token }: { token: string }) {
                   style={{
                     width: "100%", background: "var(--epi-bg)",
                     border: "1px solid var(--epi-border)", borderRadius: 8,
-                    padding: "10px 14px", color: "#fff", fontSize: 14,
+                    padding: "10px 14px", color: "var(--epi-text)", fontSize: 14,
                     fontFamily: "inherit", resize: "vertical", outline: "none",
                     boxSizing: "border-box",
                   }}

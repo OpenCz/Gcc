@@ -58,7 +58,7 @@ export function TagInput({ tags, onChange, suggestions = DEFAULT_TAGS }: {
           placeholder={tags.length === 0 ? "Entrée ou virgule pour ajouter" : ""}
           style={{
             flex: 1, minWidth: 120, background: "none", border: "none", outline: "none",
-            color: "#fff", fontSize: 13, fontFamily: "inherit",
+            color: "var(--epi-text)", fontSize: 13, fontFamily: "inherit",
           }}
         />
       </div>

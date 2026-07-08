@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ScrollArea, Group, Text } from "@mantine/core";
 import epitechLogo from "../assets/img/epitech_logo.png";
+import { ThemeToggle } from "../components/ui/ThemeToggle";
 import { MantaSidebar } from "../components/manta/MantaSidebar";
 import { SubjectsTab } from "../components/manta/SubjectsTab";
 import { ProposeTab } from "../components/manta/ProposeTab";
@@ -47,7 +48,10 @@ export function MantaPage() {
           <Text size="sm" c="dimmed">/</Text>
           <Text size="sm" fw={600}>Espace Manta</Text>
         </Group>
-        {userName && <Text size="xs" c="dimmed">{userName}</Text>}
+        <Group gap="sm">
+          {userName && <Text size="xs" c="dimmed">{userName}</Text>}
+          <ThemeToggle />
+        </Group>
       </div>
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>

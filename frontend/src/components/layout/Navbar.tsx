@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Group, Text } from "@mantine/core";
 import { IconUser } from "@tabler/icons-react";
 import epitechLogo from "../../assets/img/epitech_logo.png";
+import { ThemeToggle } from "../ui/ThemeToggle";
 import { API } from "../../lib/api";
 
 export function Navbar() {
@@ -41,6 +42,7 @@ export function Navbar() {
       </Text>
 
       <Group gap="md" align="center">
+        <ThemeToggle />
         <Text size="sm" ff="monospace" c="dimmed" style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Text component="span" c="epitech" size="xs">●</Text>
           {formatted}
