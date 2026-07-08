@@ -80,34 +80,32 @@ export function ResourcesPage() {
 
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        background: "var(--epi-surface)",
-        border: "1px solid var(--epi-border)",
-        borderLeft: "3px solid var(--epi-accent)",
+        background: "var(--epi-blue)",
         borderRadius: 10, padding: "20px 24px", gap: 20,
       }}>
         <Stack gap={6}>
-          <Text fw={700} size="lg" ff="heading">{session.title}</Text>
-          <Text size="sm" c="dimmed">{session.description}</Text>
+          <Text fw={700} size="lg" ff="heading" c="#fff">{session.title}</Text>
+          <Text size="sm" style={{ color: "rgba(255,255,255,0.8)" }}>{session.description}</Text>
         </Stack>
         <Stack gap={8} align="flex-end" style={{ flexShrink: 0 }}>
           <Group gap="xs">
-            <IconCalendar size={13} color="var(--epi-accent)" />
-            <Text size="xs" c="dimmed">{session.date}</Text>
+            <IconCalendar size={13} color="#fff" />
+            <Text size="xs" style={{ color: "rgba(255,255,255,0.9)" }}>{session.date}</Text>
           </Group>
           <Group gap="xs">
-            <IconMapPin size={13} color="var(--epi-accent)" />
-            <Text size="xs" c="dimmed">{session.location}</Text>
+            <IconMapPin size={13} color="#fff" />
+            <Text size="xs" style={{ color: "rgba(255,255,255,0.9)" }}>{session.location}</Text>
           </Group>
           <Group gap="md">
             <Group gap={6}>
-              <IconBook size={11} color="var(--epi-ghost)" />
-              <Text size="xs" style={{ color: "var(--epi-ghost)" }}>
+              <IconBook size={11} color="rgba(255,255,255,0.75)" />
+              <Text size="xs" style={{ color: "rgba(255,255,255,0.75)" }}>
                 {subjects.length} sujet{subjects.length > 1 ? "s" : ""}
               </Text>
             </Group>
             <Group gap={6}>
-              <IconFile size={11} color="var(--epi-ghost)" />
-              <Text size="xs" style={{ color: "var(--epi-ghost)" }}>
+              <IconFile size={11} color="rgba(255,255,255,0.75)" />
+              <Text size="xs" style={{ color: "rgba(255,255,255,0.75)" }}>
                 {totalFiles} fichier{totalFiles > 1 ? "s" : ""}
               </Text>
             </Group>
@@ -210,7 +208,7 @@ export function ResourcesPage() {
             const color = f === "Débutant" ? "var(--epi-beginner)"
               : f === "Intermédiaire" ? "var(--epi-intermediate)"
               : f === "Avancé" ? "var(--epi-advanced)"
-              : "var(--epi-accent)";
+              : "var(--epi-blue)";
             return (
               <button
                 key={f}
@@ -218,7 +216,7 @@ export function ResourcesPage() {
                 style={{
                   background: active ? color : "none",
                   border: `1px solid ${active ? color : "var(--epi-border)"}`,
-                  color: active ? "#111" : "var(--epi-muted)",
+                  color: active ? (f === "Tous" ? "#fff" : "#111") : "var(--epi-muted)",
                   fontSize: 12, fontWeight: 600,
                   padding: "5px 12px", borderRadius: 20,
                   cursor: "pointer", transition: "0.2s", fontFamily: "inherit",
@@ -279,7 +277,7 @@ export function ResourcesPage() {
                 key={v}
                 onClick={() => setViewMode(v)}
                 style={{
-                  background: viewMode === v ? "var(--epi-accent)" : "none",
+                  background: viewMode === v ? "var(--epi-blue)" : "none",
                   border: "none",
                   color: viewMode === v ? "#fff" : "var(--epi-ghost)",
                   padding: "6px 12px", cursor: "pointer", fontSize: 13, transition: "0.2s",

@@ -21,7 +21,11 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
         <Navbar />
       </AppShell.Header>
 
-      <AppShell.Navbar style={{ border: "none", background: "var(--epi-bg)" }}>
+      <AppShell.Navbar style={{
+        border: "none",
+        borderRight: "1px solid var(--epi-border)",
+        background: "var(--epi-panel)",
+      }}>
         <Sidebar currentPage={currentPage} onNavigate={onNavigate} />
       </AppShell.Navbar>
 

@@ -32,6 +32,7 @@ body {
 }
 
 :root {
+  --epi-blue:         #013afb;
   --epi-accent:       #809dfd;
   --epi-accent-dark:  #6b8afc;
   --epi-beginner:     #4ade80;

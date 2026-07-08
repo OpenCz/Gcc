@@ -26,7 +26,7 @@ export function Navbar() {
       style={{
         height: 48,
         borderBottom: "1px solid var(--epi-border)",
-        background: "var(--epi-bg)",
+        background: "var(--epi-panel)",
         flexShrink: 0,
       }}
     >
